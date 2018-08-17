@@ -1,0 +1,118 @@
+#pp-widgets-full-width-search {
+  background: lightgray;
+  padding: 5px;
+  width: 100%;
+}
+
+#pp-widgets-full-width-search .form-group {
+  margin: 0;
+}
+
+.pp-widgets-search-area {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+#pp-widgets-full-width-search input[type=submit] {
+  width: 100%;
+  font-size: 12px;
+  line-height: 12px;
+  height: 34px;
+  color: white;
+  background: #3573b5;
+  padding: 0;
+}
+
+#pp-widgets-full-width-search input[type=text],
+#pp-widgets-full-width-search input[type=date],
+#pp-widgets-full-width-search select {
+  background: white;
+  width: 100%;
+  font-size: 12px;
+  height: 34px;
+}
+
+#pp-widgets-full-width-search .pp-widgets-text,
+#pp-widgets-full-width-search label {
+  color: white;
+  font-weight: bold;
+  line-height: 14px;
+  font-size: 14px;
+  text-shadow: 2px 2px 2px #000;
+}
+
+#pp-widgets-full-width-search .pp-widgets-text {
+  font-size: 36px;
+  line-height: 36px;
+  margin-bottom: 10px; 
+}
+
+.pp-widgets-radio {
+  display: inline-block;
+}
+
+.pp-widgets-radio input[type=radio] {
+  display: none;
+}
+.pp-widgets-radio p {
+  display: block;
+  float: left;
+  font-size: 14px;
+  line-height: 14px;
+  margin: 0;
+}
+.pp-widgets-radio input[type=radio] + span {
+  display: block;
+  float: left;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 3px solid white;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.pp-widgets-radio input[type=radio]:checked + span {
+  background: #3573b5;
+}
+
+.pp-widgets-col {
+  display: block;
+  float: left;
+  padding: 2px;
+}
+
+.pp-widgets-col-lg {
+  width: 100%;
+}
+
+.pp-widgets-col-md,
+.pp-widgets-col-sm {
+  width: 50%;
+}
+
+@media only screen and (min-width: 576px) {
+  .pp-widgets-col-lg {
+    width: 50%;
+  }
+
+  .pp-widgets-col-md,
+  .pp-widgets-col-sm {
+    width: 25%;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .pp-widgets-col-lg {
+    width: 20%;
+  }
+
+  .pp-widgets-col-md {
+    width: 15%;
+  }
+
+  .pp-widgets-col-sm {
+    width: 10%;
+  }
+}
