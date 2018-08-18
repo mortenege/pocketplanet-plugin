@@ -1,7 +1,12 @@
 #pp-widgets-full-width-search {
-  background: lightgray;
+  background: transparent;
+  background-size: cover;
   padding: 5px;
   width: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center
 }
 
 #pp-widgets-full-width-search .form-group {

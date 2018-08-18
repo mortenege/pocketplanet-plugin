@@ -4,13 +4,14 @@
   // get url for image_id
   $pp_widgets_image_url = wp_get_attachment_url( $pp_widgets_background_image_id );
   if ($pp_widgets_image_url) {
-    $style_attr = "style=\"background: url({$pp_widgets_image_url}) no-repeat; background-size: 100%;\"";
+    $style_attr = "style=\"background: url({$pp_widgets_image_url}) no-repeat; background-size: cover;\"";
   } else {
     $style_attr = '';
   }
 ?>
 
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
+  <div>
   <h1 class="pp-widgets-text">Search Flights</h1>
   <div class="pp-widgets-search-area">
     <div class="form-check form-check-inline">
@@ -83,5 +84,6 @@
       </div>
       <div class="clearfix"></div>
     </div>
+  </div>
   </div>
 </div>
