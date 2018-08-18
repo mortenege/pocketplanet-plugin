@@ -11,6 +11,11 @@ License:     Proprietary. No usage allowed without the explicit consent og the A
 
 // set version number (for cache busting)
 $pp_widgets_version = '201808182';
+$pp_widgets_config = [
+  'version' => $pp_widgets_version,
+  'camref' => '1101l487h',
+  'source_code' => '121826'
+];
 
 /**
  * Empty Wordpress section HTML
@@ -97,8 +102,11 @@ function pp_widgets_basic_shortcode(){
 }
 add_shortcode( 'pp_widgets', 'pp_widgets_basic_shortcode');
 
-// enqueue the scripts needed to show and use the widgets
+/**
+ * enqueue the scripts needed to show and use the widgets
+ */
 function pp_widgets_scripts() {
+  global $pp_widgets_config;
   // bootstrap  
   wp_enqueue_style('bootstrap', 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css');
   wp_enqueue_script( 'bootstrap','https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js', array( 'jquery' ),'',true );
@@ -108,6 +116,23 @@ function pp_widgets_scripts() {
 
   // pp-widgets
   wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_version);
-  wp_enqueue_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_version,true );
+  wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_version,true );
+  // Localize script
+  $lData = array(
+    'url' => site_url(),
+    'camref' => $pp_widgets_config['camref'],
+    'source_code' => $pp_widgets_config['source_code'],
+  );
+  
+  wp_localize_script('pp_widgets', 'localized_data', $lData);
+  wp_enqueue_script('pp_widgets');
 }
 add_action( 'wp_enqueue_scripts', 'pp_widgets_scripts' );
+
+function pp_widgets_form(){
+  echo 'bacon';
+}
+add_action('admin_post_pp_widgets_form', 'pp_widgets_form');
+add_action('admin_post_nopriv_pp_widgets_form', 'pp_widgets_form');
+//add_action( 'wp_ajax_my_action', 'my_action' );
+//add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
