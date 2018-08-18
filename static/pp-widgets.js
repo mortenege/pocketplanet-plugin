@@ -1,3 +1,7 @@
+/**
+ * Author: Morten Ege Jensen <ege.morten@gmail.com>
+ * license: May not be used without explicit consent of Author
+ */
 jQuery(document).ready(function($){
   var camref = localized_data.camref;
   var source_code = localized_data.source_code;

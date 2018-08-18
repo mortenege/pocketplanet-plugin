@@ -6,8 +6,9 @@ Description: Custom Created widgets for pocketplanet
 Version:     20180817
 Author:      Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:  
-License:     Proprietary. No usage allowed without the explicit consent og the Author.
+License:     May not be used without the explicit consent of the Author.
 */
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
 $pp_widgets_version = '201808182';
@@ -136,3 +137,5 @@ add_action('admin_post_pp_widgets_form', 'pp_widgets_form');
 add_action('admin_post_nopriv_pp_widgets_form', 'pp_widgets_form');
 //add_action( 'wp_ajax_my_action', 'my_action' );
 //add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
+//
+include "template-injector.php";

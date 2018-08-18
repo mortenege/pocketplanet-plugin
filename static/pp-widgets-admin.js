@@ -1,4 +1,5 @@
 /**
+ * Inspired by
  * https://jeroensormani.com/how-to-include-the-wordpress-media-selector-in-your-plugin/
  */
 jQuery( document ).ready( function( $ ) {

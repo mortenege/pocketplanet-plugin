@@ -1,4 +1,10 @@
 <?php
+/**
+ * Author: Morten Ege Jensen <ege.morten@gmail.com>
+ * License: May not be used without explicit consent from Author
+ */
+  if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
   // load iamge id from database
   $pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
   // get url for image_id
