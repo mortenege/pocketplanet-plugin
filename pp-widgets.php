@@ -11,12 +11,29 @@ License:     May not be used without the explicit consent of the Author.
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '201808182';
+$pp_widgets_version = '201808183';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => '1101l487h',
   'source_code' => '121826'
 ];
+
+/**
+ * Get IP address of user
+ * other APIs:
+ * https://stackoverflow.com/questions/391979/how-to-get-clients-ip-address-using-javascript
+ * @return string ip address
+ */
+function pp_widgets_get_ip_address() {
+  if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    $ip=$_SERVER['HTTP_CLIENT_IP'];
+  } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
+  } else {
+    $ip=$_SERVER['REMOTE_ADDR'];
+  }
+  return $ip;
+}
 
 /**
  * Empty Wordpress section HTML
@@ -73,6 +90,16 @@ function pp_widgets_settings_page_html_callback() {
   ?>
   <div class="wrap">
     <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+    <div>
+      <form action="<?php echo admin_url('admin-post.php'); ?>" method="post" enctype="multipart/form-data">
+        <div>
+          <label>Upload airports file <small>must be in the form of [iata, name, city, country, lat, lng]</small></label>
+        </div>
+        <input type="file" name="airports" class="form-control"/>
+        <input type="hidden" name="action" value="pp_widgets_upload_airports" />
+        <input type="submit" name="submit" value="Upload" class="button button-primary" />
+      </form>
+    </div>
     <form action="options.php" method="post">
     <?php
       settings_fields( 'pp_widgets' );
@@ -115,12 +142,17 @@ function pp_widgets_scripts() {
   wp_enqueue_style('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
   wp_enqueue_script( 'flatpickr','https://cdn.jsdelivr.net/npm/flatpickr', array(),'',true );
 
+  // select2
+  wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css');
+  wp_enqueue_script( 'select2','https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js', array('jquery'),'',true );
+
   // pp-widgets
   wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_version);
   wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_version,true );
   // Localize script
   $lData = array(
     'url' => site_url(),
+    'ip_address' => pp_widgets_get_ip_address(),
     'camref' => $pp_widgets_config['camref'],
     'source_code' => $pp_widgets_config['source_code'],
   );
@@ -130,11 +162,23 @@ function pp_widgets_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'pp_widgets_scripts' );
 
-function pp_widgets_form(){
-  echo 'bacon';
+function pp_widgets_upload_airports(){
+  if (!isset($_FILES['airports'])) {
+    die('Missing airports file');
+  }
+
+  if ($_FILES["airports"]["error"] > 0) {
+      die("Error: " . $_FILES["airports"]["error"]);
+  }
+  
+  $csvFile = file($_FILES['airports']['tmp_name']);
+  $data = [];
+  foreach ($csvFile as $line) {
+      $data[] = str_getcsv($line);
+  }
+  var_dump(array_slice($data, 0, 10));
 }
-add_action('admin_post_pp_widgets_form', 'pp_widgets_form');
-add_action('admin_post_nopriv_pp_widgets_form', 'pp_widgets_form');
+add_action('admin_post_pp_widgets_upload_airports', 'pp_widgets_upload_airports');
 //add_action( 'wp_ajax_my_action', 'my_action' );
 //add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
 //

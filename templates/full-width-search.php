@@ -15,7 +15,6 @@
     $style_attr = '';
   }
 ?>
-
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
   <div>
     <h1 class="pp-widgets-text">Search Flights</h1>
@@ -43,9 +42,10 @@
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-lg">
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Destination</label>
               <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="Where are you going?"/>
+              <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-md">
@@ -97,3 +97,15 @@
     </form>
   </div>
 </div>
+
+<style>
+.pp-widgets-suggestions {
+  display: none;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 200px;
+  position:absolute;
+  background-color: white;
+  width:100%;
+}
+</style>
