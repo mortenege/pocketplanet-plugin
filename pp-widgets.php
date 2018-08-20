@@ -11,11 +11,11 @@ License:     May not be used without the explicit consent of the Author.
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '201808185';
+$pp_widgets_version = '20180820';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
-  'camref' => '1101l487h',
-  'source_code' => '121826'
+  'camref' => get_option('pp_widgets_camref'),
+  'source_code' => get_option('pp_widgets_source_code'),
 ];
 
 /**
@@ -56,7 +56,21 @@ function pp_widgets_background_image_html_callback(){
     <img id='image-preview' src='<?php echo $image_url; ?>' width='100' height='100' style='max-height: 100px; width: 100px;'>
   </div>
   <input id="upload_image_button" type="button" class="button" value="<?php _e( 'Upload image' ); ?>" />
-  <input type='hidden' name='pp_widgets_background_image' id='image_attachment_id' value=''>
+  <input type='hidden' name='pp_widgets_background_image' id='image_attachment_id' value=<?= $image_id; ?>>
+  <?php
+}
+
+function pp_widgets_source_code_html_callback(){
+  $value = get_option('pp_widgets_source_code');
+  ?>
+  <input type="text" name="pp_widgets_source_code" placeholder="" value="<?= $value; ?>" />
+  <?php
+}
+
+function pp_widgets_camref_html_callback(){
+  $value = get_option('pp_widgets_camref');
+  ?>
+  <input type="text" name="pp_widgets_camref" placeholder="" value="<?= $value; ?>" />
   <?php
 }
 
@@ -80,6 +94,26 @@ function pp_widgets_settings_init() {
     'pp_widgets',
     'pp_widgets_section_1'
   );
+
+  // add camref setting
+  register_setting( 'pp_widgets', 'pp_widgets_camref' );
+  add_settings_field(
+    'pp_widgets_camref',
+    'SmarterAds Camref',
+    'pp_widgets_camref_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  // add source_code setting
+  register_setting( 'pp_widgets', 'pp_widgets_source_code' );
+  add_settings_field(
+    'pp_widgets_source_code',
+    'SmarterAds Source Code',
+    'pp_widgets_source_code_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
 }
 add_action( 'admin_init', 'pp_widgets_settings_init' );
 
@@ -90,6 +124,7 @@ function pp_widgets_settings_page_html_callback() {
   ?>
   <div class="wrap">
     <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+    <!--
     <div>
       <form action="<?php echo admin_url('admin-post.php'); ?>" method="post" enctype="multipart/form-data">
         <div>
@@ -100,6 +135,7 @@ function pp_widgets_settings_page_html_callback() {
         <input type="submit" name="submit" value="Upload" class="button button-primary" />
       </form>
     </div>
+  -->
     <form action="options.php" method="post">
     <?php
       settings_fields( 'pp_widgets' );
@@ -162,6 +198,7 @@ function pp_widgets_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'pp_widgets_scripts' );
 
+/*
 function pp_widgets_upload_airports(){
   if (!isset($_FILES['airports'])) {
     die('Missing airports file');
@@ -179,7 +216,9 @@ function pp_widgets_upload_airports(){
   var_dump(array_slice($data, 0, 10));
 }
 add_action('admin_post_pp_widgets_upload_airports', 'pp_widgets_upload_airports');
+*/
+
 //add_action( 'wp_ajax_my_action', 'my_action' );
 //add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
-//
+
 include "template-injector.php";
