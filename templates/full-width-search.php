@@ -38,14 +38,14 @@
           <div class="pp-widgets-col pp-widgets-col-lg">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-origin">Origin</label>
-              <input type="text" name="origin" id="pp-widgets-origin" class="form-control" placeholder="City or Airport Code" />
+              <input type="text" name="origin" id="pp-widgets-origin" class="form-control" placeholder="City or Airport Code" autocomplete="off" />
               <div class="pp-widgets-suggestions" id="pp-widgets-origin-suggestions"></div>
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-lg">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Destination</label>
-              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or Airport code"/>
+              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or Airport code" autocomplete="off" />
               <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>
