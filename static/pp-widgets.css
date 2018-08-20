@@ -1,7 +1,7 @@
 #pp-widgets-full-width-search {
   background: transparent;
   background-size: cover;
-  padding: 5px;
+  padding: 10px;
   width: 100%;
   min-height: 400px;
   display: flex;
@@ -80,6 +80,33 @@
 
 .pp-widgets-radio input[type=radio]:checked + span {
   background: #3573b5;
+}
+
+.pp-widgets-suggestions {
+  display: none;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 200px;
+  position:absolute;
+  background-color: white;
+  width:100%;
+}
+
+.pp-widgets-suggestions span {
+  font-size: 12px;
+  font-style: italic;
+  padding: 2px;
+}
+
+.pp-widgets-suggestions div {
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.pp-widgets-suggestions div:hover {
+  color: white;
+  background-color: #3573b5;
 }
 
 .pp-widgets-col {

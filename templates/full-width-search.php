@@ -16,7 +16,7 @@
   }
 ?>
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
-  <div>
+  <div style="width:100%;">
     <h1 class="pp-widgets-text">Search Flights</h1>
     <form id="pp_widgets_form">
       <div class="pp-widgets-search-area">
@@ -36,15 +36,16 @@
         </div>
         <div class="pp-widgets-row">
           <div class="pp-widgets-col pp-widgets-col-lg">
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
               <label for="pp-widgets-origin">Origin</label>
               <input type="text" name="origin" id="pp-widgets-origin" class="form-control" placeholder="City or Airport Code" />
+              <div class="pp-widgets-suggestions" id="pp-widgets-origin-suggestions"></div>
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-lg">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Destination</label>
-              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="Where are you going?"/>
+              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or Airport code"/>
               <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>
@@ -97,15 +98,3 @@
     </form>
   </div>
 </div>
-
-<style>
-.pp-widgets-suggestions {
-  display: none;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  max-height: 200px;
-  position:absolute;
-  background-color: white;
-  width:100%;
-}
-</style>

@@ -3,6 +3,9 @@
  * license: May not be used without explicit consent of Author
  */
 
+/**
+ * Standard debounce function
+ */
 function debounce(func, wait, immediate) {
   var timeout;
   return function() {
@@ -19,6 +22,7 @@ function debounce(func, wait, immediate) {
 };
 
 jQuery(document).ready(function($){
+  // load params
   var camref = localized_data.camref;
   var source_code = localized_data.source_code;
   var date2Default = (new Date()).getTime() + 60*60*24*7*1000; // seven days from now
@@ -47,34 +51,152 @@ jQuery(document).ready(function($){
     });
   })
 
+  /**
+   * Setup airport search functionality
+   */
   $(function(){
-    function add_dropdown_box(element, airports) {
-      var box = $('#pp-widgets-destination-suggestions');
-      for (let iata in airports) {
-        box.append($('<div></div>').text(airports[iata]));
-      }
-      box.show();
+    // find inputs and dropdowns
+    var $destination_dropdown = $('#pp-widgets-destination-suggestions');
+    var $destination_input = $('#pp-widgets-destination');
+    var $origin_dropdown = $('#pp-widgets-origin-suggestions');
+    var $origin_input = $('#pp-widgets-origin');
+
+    /**
+     * A click handler added to document to close all open dropdowns
+     */
+    var document_click_handler = function (e) {
+      close_dropdown_box($destination_dropdown);
+      close_dropdown_box($origin_dropdown);
+    };
+
+    /**
+     * Close a dropdown (but keep content)
+     * @param  {[type]} $dropdown [description]
+     */
+    function close_dropdown_box($dropdown){
+      $dropdown.hide();
+
+      // unbind "close" handler
+      $(document).off("click", document_click_handler);
     }
 
-    function search_airports(e){
-      console.log('!!!!', $(this).val());
-      var val = $(this).val();
+    /**
+     * Clear content of dropdown
+     * @param  {[type]} $dropdown [description]
+     */
+    function clear_dropdown_box($dropdown){
+      $dropdown.empty();
+    }
+
+    /**
+     * Open a dropdown and fill with rows
+     * @param  {[type]} $input    [description]
+     * @param  {[type]} $dropdown [description]
+     * @param  {Array|Object} results   [description]
+     */
+    function open_dropdown_box($input, $dropdown, results) {
+      $dropdown.empty();
+      // fill dropdown with data
+      for (let key in results) {
+        let $el = $('<div></div>').text(results[key]);
+        $el.attr('data-code', key);
+        $el.on('click', function(e){
+          $input.val($(this).text());
+          $input.attr('data-code', $(this).attr('data-code'));
+          close_dropdown_box($dropdown);
+          e.stopPropagation();
+        });
+        $dropdown.append($el);
+      }
+
+      if (Object.keys(results).length === 0) {
+        $dropdown.append($('<span></span>').text('No results found'));
+      }
+      // show dropdown
+      $dropdown.show();
+
+      // attach "close" handler
+      $(document).off("click", document_click_handler);
+      $(document).on("click", document_click_handler);
+    }
+
+    /**
+     * Use API to search for airport names and codes
+     * @param  {[type]} e         [description]
+     * @param  {[type]} $input    [description]
+     * @param  {[type]} $dropdown [description]
+     */
+    function search_airports(e, $input, $dropdown){
+      var val = $input.val();
       var url = 'http://autocomplete.travelpayouts.com/places2?term=' + val + '&locale=en&types[]=airport';
+
+      clear_dropdown_box($dropdown);
+      if (!val) {
+        close_dropdown_box($dropdown);
+        return;
+      }
+
       $.get(url, function(response, status){
         var airports = {};
         for (let i in response) {
           a = response[i]
-          airports[a.code] = a.city_name + ', ' + a.country_name + ' (' + a.code + ')'
+          let str = a.name
+          str += str.indexOf(a.city_name) >= 0 ? '' : ', ' + a.city_name;
+          str += a.state_code ? ', ' + a.state_code : (
+            ['GB'].indexOf(a.country_code) >= 0 ? ', ' + a.country_code : ', ' + a.country_name
+              );
+          str += ' (' + a.code + ')';
+          airports[a.code] = str;
         }
-        console.log('----->', response, airports);
-        add_dropdown_box($('#pp-widgets-destination'), airports);
+        // console.log('----->', response, airports);
+        open_dropdown_box($input, $dropdown, airports);
       });
     }
 
-    // $('#pp-widgets-destination').select2();
-    $('#pp-widgets-destination').keyup( debounce(search_airports, 250) );
+    /**
+     * Shortcut to search for destinations
+     * @param  {[type]} e [description]
+     */
+    function search_airports_destination (e) {
+      search_airports(e, $destination_input, $destination_dropdown);
+    }
+
+    /**
+     * Shortcut to search for origins
+     * @param  {[type]} e [description]
+     */
+    function search_airports_origin (e) {
+      search_airports(e, $origin_input, $origin_dropdown);
+    }
+
+    // Setup destinaton searh
+    $destination_input.keyup( debounce(search_airports_destination, 250) );
+    $destination_input.on('click', function(e){
+      e.stopPropagation();
+    });
+    $destination_input.focus(function(e){
+      $origin_dropdown.hide();
+      $destination_dropdown.show();
+      // attach "close" handler
+      $(document).on("click", document_click_handler);
+    });
+
+    // setup origin search
+    $origin_input.keyup( debounce(search_airports_origin, 250) );
+    $origin_input.on('click', function(e){
+      e.stopPropagation();
+    });
+    $origin_input.focus(function(e){
+      $origin_dropdown.show();
+      $destination_dropdown.hide();
+      // attach "close" handler
+      $(document).on("click", document_click_handler);
+    });
   });
 
+  /**
+   * Validate and Submit form
+   */
   $('#pp_widgets_form').on('submit', function(event){
     event.preventDefault();
 
@@ -103,6 +225,8 @@ jQuery(document).ready(function($){
       obj[item.name] = item.value;
       return obj;
       }, {})
+    data['origin'] = $origin.attr('data-code') || $origin.val();
+    data['destination'] = $destination.attr('data-code') || $destination.val();
     data['class'] = data['class'] || 'economy_coach';
     data['travelers'] = data['travelers'] || 2;
     data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);

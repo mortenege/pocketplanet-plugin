@@ -11,7 +11,7 @@ License:     May not be used without the explicit consent of the Author.
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '201808183';
+$pp_widgets_version = '201808185';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => '1101l487h',
@@ -143,12 +143,12 @@ function pp_widgets_scripts() {
   wp_enqueue_script( 'flatpickr','https://cdn.jsdelivr.net/npm/flatpickr', array(),'',true );
 
   // select2
-  wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css');
-  wp_enqueue_script( 'select2','https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js', array('jquery'),'',true );
+  // wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css');
+  // wp_enqueue_script( 'select2','https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js', array('jquery'),'',true );
 
   // pp-widgets
-  wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_version);
-  wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_version,true );
+  wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_config['version']);
+  wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_config['version'], true );
   // Localize script
   $lData = array(
     'url' => site_url(),
