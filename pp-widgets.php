@@ -89,7 +89,7 @@ function pp_widgets_settings_init() {
   register_setting( 'pp_widgets', 'pp_widgets_background_image' );
   add_settings_field(
     'pp_widgets_background_image',
-    'Add a background image to full width search',
+    'Set a fallback image to full width search pane',
     'pp_widgets_background_image_html_callback',
     'pp_widgets',
     'pp_widgets_section_1'

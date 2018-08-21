@@ -6,7 +6,10 @@
   if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
   // load iamge id from database
-  $pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
+  $pp_widgets_background_image_id = get_post_meta(get_the_ID(), 'pp_widgets_background_image', true);
+  if (!$pp_widgets_background_image_id) {
+    $pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
+  }
   // get url for image_id
   $pp_widgets_image_url = wp_get_attachment_url( $pp_widgets_background_image_id );
   if ($pp_widgets_image_url) {
