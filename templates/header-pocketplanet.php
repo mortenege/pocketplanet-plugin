@@ -24,5 +24,11 @@
 		
 		<?php get_template_part( 'pre-content' ); // Include pre-content.php ?>
 		
-		<?php echo do_shortcode('[pp_widgets]'); ?>
+		<?php 
+			$type = get_post_meta(get_the_ID(), 'pp_widgets_page_type', true);
+			if ($type) {
+				$shortcode = '[pp_widgets type="' . $type . '"]';
+				echo do_shortcode($shortcode); 
+			}
+		?>
 		<div id="main" class="clearfix">

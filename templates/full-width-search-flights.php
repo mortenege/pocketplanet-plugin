@@ -18,7 +18,7 @@
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
   <div style="width:100%;">
     <h1 class="pp-widgets-text">Search Flights</h1>
-    <form id="pp_widgets_form">
+    <form id="pp_widgets_form" data-search-type="flight">
       <div class="pp-widgets-search-area">
         <div class="form-check form-check-inline">
           <label class="pp-widgets-radio" for="pp-widgets-radio-1">
@@ -95,6 +95,7 @@
       </div>
       <input type="hidden" name="nonstop" value="true" />
       <!--<input type="hidden" name="action" value="pp_widgets_form" />-->
+      <div>&nbsp;</div>
     </form>
   </div>
 </div>

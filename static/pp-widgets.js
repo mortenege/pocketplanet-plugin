@@ -26,8 +26,20 @@ jQuery(document).ready(function($){
   var camref = localized_data.camref;
   var source_code = localized_data.source_code;
   var date2Default = (new Date()).getTime() + 60*60*24*7*1000; // seven days from now
-  var apiURLFlight = "https://prf.hn/click/camref:"+camref+"/adref:flight_deeplink/destination:http://www.bookingbuddy.com/en/partner/hero/?mode=air&source="+source_code+"&";
   var ip = localized_data.ip_address;
+
+  /**
+   * Build an API url from all segments
+   * @param  {[type]} camref      [description]
+   * @param  {[type]} source_code [description]
+   * @param  {[type]} type        [description]
+   * @param  {[type]} queryString [description]
+   * @return {[type]}             [description]
+   */
+  function buildAPIUrl (camref, source_code, type, queryString) {
+    var mode = type === 'flight' ? 'air' : type;
+    return "https://prf.hn/click/camref:"+camref+"/adref:" + type + "_deeplink/destination:http://www.bookingbuddy.com/en/partner/hero/?mode=" + mode + "&source=" + source_code + "&" + queryString;
+  }
 
   // init flatpickr
   $('#pp-widgets-date1').flatpickr({
@@ -52,19 +64,19 @@ jQuery(document).ready(function($){
   })
 
   /**
-   * Setup airport search functionality
+   * Setup search functionality
    */
   $(function(){
     // find inputs and dropdowns
-    var $destination_dropdown = $('#pp-widgets-destination-suggestions');
     var $destination_input = $('#pp-widgets-destination');
-    var $origin_dropdown = $('#pp-widgets-origin-suggestions');
     var $origin_input = $('#pp-widgets-origin');
+    var $destination_dropdown = $('#pp-widgets-destination-suggestions');
+    var $origin_dropdown = $('#pp-widgets-origin-suggestions');
 
     /**
      * A click handler added to document to close all open dropdowns
      */
-    var document_click_handler = function (e) {
+    var document_click_handler = function (e) {    
       close_dropdown_box($destination_dropdown);
       close_dropdown_box($origin_dropdown);
     };
@@ -121,14 +133,55 @@ jQuery(document).ready(function($){
     }
 
     /**
-     * Use API to search for airport names and codes
-     * @param  {[type]} e         [description]
-     * @param  {[type]} $input    [description]
-     * @param  {[type]} $dropdown [description]
+     * Shorthand to parse the incoming object
+     * @param  {object} a    [description]
+     * @param  {string} type [description]
+     * @return {string}      [description]
      */
-    function search_airports(e, $input, $dropdown){
+    function parse_api_result (a, type) {
+      var str = '';
+      if (a.type == "airport") {
+        str = a.name;
+        str += str.indexOf(a.city_name) >= 0 ? '' : ', ' + a.city_name;
+        str += a.state_code ? ', ' + a.state_code : (
+          ['GB'].indexOf(a.country_code) >= 0 ? ', ' + a.country_code : ', ' + a.country_name
+            );
+        str += ' (' + a.code + ')';
+      } else if (a.type == "city" && type == 'airport') {
+        str = a.main_airport_name || a.name;
+        str += str.indexOf(a.name) >= 0 ? '' : ', ' + a.name;
+        str += a.state_code ? ', ' + a.state_code : (
+          ['GB'].indexOf(a.country_code) >= 0 ? ', ' + a.country_code : ', ' + a.country_name
+            );
+        str += ' (' + a.code + ')';
+      } else if (a.type == 'city'){
+        str = a.name;
+        str += a.state_code ? ', ' + a.state_code : '';
+        str += ', ' + a.country_name;
+      } else {
+        str = a.name;
+      }
+      return str;
+    }
+
+    /**
+     * Use API to search for cities, countries and airports
+     * @param  {[type]} e         [description]
+     */
+    function search_api(e){
+      // get input and dropdown elements
+      var $input = $(this);
+      var $dropdown = $input.closest('div.form-group').find('.pp-widgets-suggestions');
+
+      // get searcg term
       var val = $input.val();
-      var url = 'http://autocomplete.travelpayouts.com/places2?term=' + val + '&locale=en&types[]=airport';
+      // get types of search
+      var types = $input.attr('data-search-types') || 'country,city,airport';
+      types = types.split(',').map(function(type){
+        return 'types[]=' + type.trim();
+      }).join('&');
+      // generate url
+      var url = 'http://autocomplete.travelpayouts.com/places2?term=' + val + '&locale=en&' + types;
 
       clear_dropdown_box($dropdown);
       if (!val) {
@@ -137,40 +190,21 @@ jQuery(document).ready(function($){
       }
 
       $.get(url, function(response, status){
-        var airports = {};
+        var results = {};
+        
+        var type = types.indexOf('airport') >= 0 ? 'airport' : 'city';
         for (let i in response) {
           a = response[i]
-          let str = a.name
-          str += str.indexOf(a.city_name) >= 0 ? '' : ', ' + a.city_name;
-          str += a.state_code ? ', ' + a.state_code : (
-            ['GB'].indexOf(a.country_code) >= 0 ? ', ' + a.country_code : ', ' + a.country_name
-              );
-          str += ' (' + a.code + ')';
-          airports[a.code] = str;
+          let str = parse_api_result(a, type);
+          results[a.code] = str;
         }
-        // console.log('----->', response, airports);
-        open_dropdown_box($input, $dropdown, airports);
+        // console.log('----->', response, results);
+        open_dropdown_box($input, $dropdown, results);
       });
     }
 
-    /**
-     * Shortcut to search for destinations
-     * @param  {[type]} e [description]
-     */
-    function search_airports_destination (e) {
-      search_airports(e, $destination_input, $destination_dropdown);
-    }
-
-    /**
-     * Shortcut to search for origins
-     * @param  {[type]} e [description]
-     */
-    function search_airports_origin (e) {
-      search_airports(e, $origin_input, $origin_dropdown);
-    }
-
     // Setup destinaton searh
-    $destination_input.keyup( debounce(search_airports_destination, 250) );
+    $destination_input.keyup( debounce(search_api, 250) );
     $destination_input.on('click', function(e){
       e.stopPropagation();
     });
@@ -182,7 +216,7 @@ jQuery(document).ready(function($){
     });
 
     // setup origin search
-    $origin_input.keyup( debounce(search_airports_origin, 250) );
+    $origin_input.keyup( debounce(search_api, 250) );
     $origin_input.on('click', function(e){
       e.stopPropagation();
     });
@@ -199,70 +233,52 @@ jQuery(document).ready(function($){
    */
   $('#pp_widgets_form').on('submit', function(event){
     event.preventDefault();
-
-    var $origin = $(this).find('input[name="origin"]');    
-    var $destination = $(this).find('input[name="destination"]');
-    $origin = $origin.length > 0 ? $($origin[0]) : null;
-    $destination = $destination.length > 0 ? $($destination[0]) : null;
-    // Validate these two fields
-    $origin.removeClass('is-invalid');
-    if (!$origin.val()){
-      $origin.addClass('is-invalid');
-      alert('Please enter a departing city or airport');
-      return;
+    var search_type = $(this).attr('data-search-type');
+    
+    if (search_type === 'flight') {
+      var $origin = $(this).find('input[name="origin"]');
+      $origin = $origin.length > 0 ? $($origin[0]) : null;
+      $origin.removeClass('is-invalid');
+      if (!$origin.val()){
+        $origin.addClass('is-invalid');
+        alert('Please enter a departing city or airport');
+        return;
+      }
     }
+
+    // destination is there for all search types
+    var $destination = $(this).find('input[name="destination"]');
+    $destination = $destination.length > 0 ? $($destination[0]) : null;
     $destination.removeClass('is-invalid');
     if (!$destination.val()){
       $destination.addClass('is-invalid');
-      alert('Please enter a destination city or airport');
+      alert('Please enter a destination');
       return;
     }
 
     // set rest to standard values
-    //var url = [localized_data.url, 'wp-admin', "admin-post.php"].join('/');
     var data = $(this).serializeArray();
     data = data.reduce((obj, item) => {
       obj[item.name] = item.value;
       return obj;
       }, {})
-    data['origin'] = $origin.attr('data-code') || $origin.val();
-    data['destination'] = $destination.attr('data-code') || $destination.val();
-    data['class'] = data['class'] || 'economy_coach';
+
+    data['destination'] = $destination.val();
     data['travelers'] = data['travelers'] || 2;
     data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);
     data['date2'] = data['date2'] || (new Date(date2Default)).toJSON().slice(0, 10);
-    data['oneway'] = data['oneway'] === 'false' || data['oneway'] === 'true' ? data['oneway'] : 'false';
-    data['nonstop'] = data['nonstop'] === 'false' || data['nonstop'] === 'true' ? data['nonstop'] : 'true';    
+    
+    if (search_type === 'flight') {
+      data['origin'] = $origin.attr('data-code') || $origin.val();
+      data['class'] = data['class'] || 'economy_coach';
+      data['oneway'] = data['oneway'] === 'false' || data['oneway'] === 'true' ? data['oneway'] : 'false';
+      data['nonstop'] = data['nonstop'] === 'false' || data['nonstop'] === 'true' ? data['nonstop'] : 'true';    
+    } else if (search_type === 'hotel') {
+      data['rooms'] = data['rooms'] || 1;
+    }
 
-    //$(this).attr('method', 'post');
-    //$(this).attr('action', url);
-    // var queryString = $(this).serialize();
-    // $(this).submit();
     var queryString = jQuery.param(data);
-    window.open(apiURLFlight + queryString);
-    /*
-    $(this).find('input[type=text], select').each(function(){
-      var name = $(this).attr('name');
-      var val = $(this).val();
-
-      $(this).removeClass('is-invalid');
-      switch(name) {
-        case 'origin':
-          if (!val) {
-            $(this).addClass('is-invalid');
-            alert('Please enter a departing city or airport');
-            return;
-          }
-          break;
-        case 'destination':
-          if (!val) {
-            $(this).addClass('is-invalid');
-            alert('Please enter a destination city or airport');
-            return;
-          }
-          break;
-      }
-    });
-    */
+    var url = buildAPIUrl(camref, source_code, search_type, queryString);
+    window.open(url);
   });
 });

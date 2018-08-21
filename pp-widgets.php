@@ -11,7 +11,7 @@ License:     May not be used without the explicit consent of the Author.
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '20180820';
+$pp_widgets_version = '201808204';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
@@ -158,9 +158,20 @@ add_action('admin_menu', 'pp_widgets_add_menu');
 /**
  * Shortcode: Load the full width search from an external source
  */
-function pp_widgets_basic_shortcode(){
+function pp_widgets_basic_shortcode($atts = [], $content = '', $tag = ''){
+   // normalize attribute keys, lowercase
+  $atts = array_change_key_case((array)$atts, CASE_LOWER);
+  // override default attributes with user attributes
+  $parsed_atts = shortcode_atts([
+    'type' => 'flights',
+  ], $atts, $tag);
+
+  $type = $parsed_atts['type'];
+  $type = in_array($type, ['flights', 'hotels', 'cars']) ? $type : null;
+  if (!$type) return '';
+  $filename = '/templates/full-width-search-' . $type . '.php';
   ob_start();
-  require_once(dirname(__FILE__).'/templates/full-width-search.php');
+  require_once(dirname(__FILE__) . $filename);
   return ob_get_clean();   
   // return '<h2>Hello, World</h2>';
 }
@@ -222,3 +233,4 @@ add_action('admin_post_pp_widgets_upload_airports', 'pp_widgets_upload_airports'
 //add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
 
 include "template-injector.php";
+include "meta-boxes.php";
