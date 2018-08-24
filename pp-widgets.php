@@ -1,17 +1,17 @@
 <?php
 /*
-Plugin Name: pocketplanet widgets
-Plugin URI:  
-Description: Custom Created widgets for pocketplanet
-Version:     20180817
-Author:      Morten Ege Jensen <ege.morten@gmail.com>
-Author URI:  
-License:     May not be used without the explicit consent of the Author.
+Plugin Name:  pocketplanet widgets
+Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
+Description:  Custom Created widgets for pocketplanet.com
+Version:      20180824
+Author:       Morten Ege Jensen <ege.morten@gmail.com>
+Author URI:   https://github.com/mortenege
+License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '20180823';
+$pp_widgets_version = '20180824';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),

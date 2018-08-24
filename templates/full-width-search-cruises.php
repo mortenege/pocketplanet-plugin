@@ -1,23 +1,28 @@
 <?php
-/**
- * Author: Morten Ege Jensen <ege.morten@gmail.com>
- * License: May not be used without explicit consent from Author
- */
-  if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+/*
+Plugin Name:  pocketplanet widgets
+Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
+Description:  Custom Created widgets for pocketplanet.com
+Version:      20180823
+Author:       Morten Ege Jensen <ege.morten@gmail.com>
+Author URI:   https://github.com/mortenege
+License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
+*/
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-  // load iamge id from database
-  // $pp_widgets_background_image_id = get_option('pp_widgets_background_image_cars', 0);
-  $pp_widgets_background_image_id = get_post_meta(get_the_ID(), 'pp_widgets_background_image', true);
-  if (!$pp_widgets_background_image_id) {
-    $pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
-  }
-  // get url for image_id
-  $pp_widgets_image_url = wp_get_attachment_url( $pp_widgets_background_image_id );
-  if ($pp_widgets_image_url) {
-    $style_attr = "style=\"background-image: url({$pp_widgets_image_url});\"";
-  } else {
-    $style_attr = '';
-  }
+// load iamge id from database
+// $pp_widgets_background_image_id = get_option('pp_widgets_background_image_cars', 0);
+$pp_widgets_background_image_id = get_post_meta(get_the_ID(), 'pp_widgets_background_image', true);
+if (!$pp_widgets_background_image_id) {
+  $pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
+}
+// get url for image_id
+$pp_widgets_image_url = wp_get_attachment_url( $pp_widgets_background_image_id );
+if ($pp_widgets_image_url) {
+  $style_attr = "style=\"background-image: url({$pp_widgets_image_url});\"";
+} else {
+  $style_attr = '';
+}
 ?>
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
   <div style="width:100%;">

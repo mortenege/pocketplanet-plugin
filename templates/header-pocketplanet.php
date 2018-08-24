@@ -1,3 +1,20 @@
+<?php
+/*
+Plugin Name:  pocketplanet widgets
+Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
+Description:  Custom Created widgets for pocketplanet.com
+Version:      20180823
+Author:       Morten Ege Jensen <ege.morten@gmail.com>
+Author URI:   https://github.com/mortenege
+License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
+*/
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+/**
+ * Note from Ege: This is a copy of the original mag template file, with code added
+ */
+?>
+
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 
@@ -25,6 +42,7 @@
 		<?php get_template_part( 'pre-content' ); // Include pre-content.php ?>
 		
 		<?php 
+			// Note: This is the only code that needs inputting
 			$type = get_post_meta(get_the_ID(), 'pp_widgets_page_type', true);
 			if ($type) {
 				$shortcode = '[pp_widgets type="' . $type . '"]';

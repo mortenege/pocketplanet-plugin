@@ -1,7 +1,12 @@
-/**
- * Author: Morten Ege Jensen <ege.morten@gmail.com>
- * license: May not be used without explicit consent of Author
- */
+/*
+Plugin Name:  pocketplanet widgets
+Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
+Description:  Custom Created widgets for pocketplanet.com
+Version:      20180823
+Author:       Morten Ege Jensen <ege.morten@gmail.com>
+Author URI:   https://github.com/mortenege
+License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
+*/
 
 /**
  * Standard debounce function
