@@ -11,7 +11,7 @@ License:     May not be used without the explicit consent of the Author.
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '201808204';
+$pp_widgets_version = '20180823';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
@@ -167,7 +167,7 @@ function pp_widgets_basic_shortcode($atts = [], $content = '', $tag = ''){
   ], $atts, $tag);
 
   $type = $parsed_atts['type'];
-  $type = in_array($type, ['flights', 'hotels', 'cars']) ? $type : null;
+  $type = in_array($type, ['flights', 'hotels', 'cars', 'cruises']) ? $type : null;
   if (!$type) return '';
   $filename = '/templates/full-width-search-' . $type . '.php';
   ob_start();

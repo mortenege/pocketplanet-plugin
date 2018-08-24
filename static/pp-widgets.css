@@ -1,6 +1,8 @@
 #pp-widgets-full-width-search {
-  background: transparent;
+  background-color: transparent;
   background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   padding: 10px;
   width: 100%;
   min-height: 400px;
@@ -21,8 +23,9 @@
 
 #pp-widgets-full-width-search input[type=submit] {
   width: 100%;
-  font-size: 12px;
-  line-height: 12px;
+  font-size: 18px;
+  line-height: 14px;
+  font-weight: 800;
   height: 34px;
   color: white;
   background: rgb(236, 102, 30);
@@ -32,9 +35,11 @@
 #pp-widgets-full-width-search input[type=text],
 #pp-widgets-full-width-search input[type=date],
 #pp-widgets-full-width-search select {
+  color: #000000;
   background: white;
   width: 100%;
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 14px;
   height: 34px;
 }
 
@@ -64,7 +69,7 @@
   display: block;
   float: left;
   font-size: 14px;
-  line-height: 14px;
+  line-height: 20px;
   margin: 0;
 }
 .pp-widgets-radio input[type=radio] + span {
@@ -83,6 +88,7 @@
 }
 
 .pp-widgets-suggestions {
+  font-size: 14px;
   display: none;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -94,13 +100,13 @@
 }
 
 .pp-widgets-suggestions span {
-  font-size: 12px;
+  font-size: inherit;
   font-style: italic;
   padding: 2px;
 }
 
 .pp-widgets-suggestions div {
-  font-size: 12px;
+  font-size: inherit;
   cursor: pointer;
   padding: 2px;
 }

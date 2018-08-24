@@ -249,11 +249,13 @@ jQuery(document).ready(function($){
     // destination is there for all search types
     var $destination = $(this).find('input[name="destination"]');
     $destination = $destination.length > 0 ? $($destination[0]) : null;
-    $destination.removeClass('is-invalid');
-    if (!$destination.val()){
-      $destination.addClass('is-invalid');
-      alert('Please enter a destination');
-      return;
+    if ($destination) {
+      $destination.removeClass('is-invalid');
+      if (!$destination.val()){
+        $destination.addClass('is-invalid');
+        alert('Please enter a destination');
+        return;
+      }
     }
 
     // set rest to standard values
@@ -263,10 +265,12 @@ jQuery(document).ready(function($){
       return obj;
       }, {})
 
-    data['destination'] = $destination.val();
-    data['travelers'] = data['travelers'] || 2;
-    data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);
-    data['date2'] = data['date2'] || (new Date(date2Default)).toJSON().slice(0, 10);
+    if (search_type !== 'cruise') {
+      data['destination'] = $destination.val();
+      data['travelers'] = data['travelers'] || 2;
+      data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);
+      data['date2'] = data['date2'] || (new Date(date2Default)).toJSON().slice(0, 10);
+    }
     
     if (search_type === 'flight') {
       data['origin'] = $origin.attr('data-code') || $origin.val();

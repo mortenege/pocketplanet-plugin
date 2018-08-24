@@ -57,6 +57,7 @@ abstract class PPWidgets_Meta_Box
             <option value="flights" <?php selected($page_type, 'flights'); ?>>Flights</option>
             <option value="hotels" <?php selected($page_type, 'hotels'); ?>>Hotels</option>
             <option value="cars" <?php selected($page_type, 'cars'); ?>>Cars</option>
+            <option value="cruises" <?php selected($page_type, 'cruises'); ?>>Cruises</option>
         </select>
 
         <div class='image-preview-wrapper'>

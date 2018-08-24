@@ -13,7 +13,7 @@
   // get url for image_id
   $pp_widgets_image_url = wp_get_attachment_url( $pp_widgets_background_image_id );
   if ($pp_widgets_image_url) {
-    $style_attr = "style=\"background: url({$pp_widgets_image_url}) no-repeat; background-size: cover;\"";
+    $style_attr = "style=\"background-image: url({$pp_widgets_image_url});\"";
   } else {
     $style_attr = '';
   }
@@ -95,10 +95,10 @@
           </div>
           <div class="clearfix"></div>
         </div>
+        <div>&nbsp;</div>
       </div>
       <input type="hidden" name="nonstop" value="true" />
       <!--<input type="hidden" name="action" value="pp_widgets_form" />-->
-      <div>&nbsp;</div>
     </form>
   </div>
 </div>
