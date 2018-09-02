@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20180824
+Version:      20180902
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // set version number (for cache busting)
-$pp_widgets_version = '20180824';
+$pp_widgets_version = '20180902';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
@@ -189,10 +189,6 @@ function pp_widgets_scripts() {
   wp_enqueue_style('flatpickr', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
   wp_enqueue_script( 'flatpickr','https://cdn.jsdelivr.net/npm/flatpickr', array(),'',true );
 
-  // select2
-  // wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css');
-  // wp_enqueue_script( 'select2','https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js', array('jquery'),'',true );
-
   // pp-widgets
   wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_config['version']);
   wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_config['version'], true );
@@ -209,28 +205,63 @@ function pp_widgets_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'pp_widgets_scripts' );
 
-/*
-function pp_widgets_upload_airports(){
-  if (!isset($_FILES['airports'])) {
-    die('Missing airports file');
-  }
-
-  if ($_FILES["airports"]["error"] > 0) {
-      die("Error: " . $_FILES["airports"]["error"]);
-  }
-  
-  $csvFile = file($_FILES['airports']['tmp_name']);
-  $data = [];
-  foreach ($csvFile as $line) {
-      $data[] = str_getcsv($line);
-  }
-  var_dump(array_slice($data, 0, 10));
+/**
+ * Append smarter travel shortcode to each post
+ * @return [type] [description]
+ */
+function pp_widgets_add_smarterads () {
+  global $post;
+  if( ! $post instanceof WP_Post ) return;
+  if ( 'post' !== $post->post_type ) return;
+  echo do_shortcode("[pp_widgets_smarterads destination='{$post->post_title}']");
 }
-add_action('admin_post_pp_widgets_upload_airports', 'pp_widgets_upload_airports');
-*/
+add_filter( 'wp_footer', 'pp_widgets_add_smarterads' );
 
-//add_action( 'wp_ajax_my_action', 'my_action' );
-//add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
+/**
+ * SmarterTravel Short code script
+ * @param  array  $atts    [description]
+ * @param  string $content [description]
+ * @param  string $tag     [description]
+ * @return string          [description]
+ */
+function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
+   // normalize attribute keys, lowercase
+  $atts = array_change_key_case((array)$atts, CASE_LOWER);
+  // override default attributes with user attributes
+  $parsed_atts = shortcode_atts([
+    'type' => 'hotel',
+    'destination' => 'Bangkok, Thailand',
+    'origin' => 'Bali',
+    'date1' => date('Y-m-d'),
+    'date2' => date('Y-m-d', strtotime("+3 days"))
+  ], $atts, $tag);
+
+  $type = $parsed_atts['type'];
+  $type = in_array($type, ['hotel', 'air', 'car', 'vacation', 'cruise']) ? $type : 'hotel';
+  $data['type'] = $type;
+  $data['date1'] = $parsed_atts['date1'];
+  $data['date2'] = $parsed_atts['date2'];
+  $data['origin'] = $parsed_atts['origin'];
+  $data['destination'] = $parsed_atts['destination'];
+
+  $filename = '/templates/smarterads.php';
+  ob_start();
+  include dirname(__FILE__) . $filename;
+  return ob_get_clean();   
+}
+add_shortcode('pp_widgets_smarterads', 'pp_widgets_smarterads_shortcode');
+
+/**
+ * Add SmarterTravel Script in Header
+ */
+function pp_widgets_add_smarterads_script () {
+    ?>
+<script>
+!function(e,r,t){function n(e){var r,t=document.createElement("script");t.src="//p.smarter-js.com"+e,t.async=!0,(r=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,r)}var i,a=["/ext/partner/universal-integration/universal-integration-hosted.min.js"];(i=e.smarter=e.smarter||function(e){if("register"===e){i.API_KEY=arguments&&arguments[1]?arguments[1]:null;for(var r=0;r<a.length;r++)n(a[r])}else i._queue.push(arguments)})._init||(e.SmarterTravelNetworkNS="smarter",i.BOOTSTRAP_VERSION="2.2.0",i._init=!0,i._queue=[],i("register","tC3iwejhT2m8JNEKtbA6CA"))}(window);
+</script>
+    <?php
+}
+add_action('wp_head', 'pp_widgets_add_smarterads_script');
 
 include "template-injector.php";
 include "meta-boxes.php";
