@@ -358,10 +358,10 @@ function pp_widgets_set_cookie () {
     );
   }
 
-  if (!isset($_COOKIE[$PP_WIDGETS_COOKIE_GUID_NAME])){
+  if (isset($_COOKIE[$PP_WIDGETS_COOKIE_GUID_NAME])){
     global $pp_widgets_config;
     // Create a GUID
-    $pp_widgets_config['intent_params']['publisher_user_id'] = substr(com_create_guid(), 1, -1);
+    $pp_widgets_config['intent_params']['publisher_user_id'] = substr(getGUID(), 1, -1);
     // set cookie
     setcookie(
       $PP_WIDGETS_COOKIE_GUID_NAME,
@@ -412,5 +412,19 @@ function pp_widgets_get_guid(){
     return $pp_widgets_config['intent_params']['publisher_user_id'];
   }
 
-  return substr(com_create_guid(), 1, -1);
+  return substr(getGUID(), 1, -1);
+}
+
+function getGUID(){
+  mt_srand((double)microtime()*10000);//optional for php 4.2.0 and up.
+  $charid = strtoupper(md5(uniqid(mt_rand(), true)));
+  $hyphen = chr(45);// "-"
+  $uuid = chr(123)// "{"
+    .substr($charid, 0, 8).$hyphen
+    .substr($charid, 8, 4).$hyphen
+    .substr($charid,12, 4).$hyphen
+    .substr($charid,16, 4).$hyphen
+    .substr($charid,20,12)
+    .chr(125);// "}"
+  return $uuid;
 }
