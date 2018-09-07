@@ -286,7 +286,7 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
   // override default attributes with user attributes
   $parsed_atts = shortcode_atts([
     'type' => 'hotel',
-    'destination' => 'Bangkok',
+    'destination' => get_the_title(),
     // 'origin' => 'Bali',
     'date1' => date('Y-m-d'),
     'date2' => date('Y-m-d', strtotime("+3 days"))
@@ -427,3 +427,8 @@ function pp_widgets_check_probability($probability=0.5, $length=10000) {
   $test = mt_rand(1, $length);
   return $test <= $probability * $length;
 }
+
+function pp_widgets_load_ads () {
+  echo do_shortcode('[pp_widgets_ads]');
+}
+add_action('wp_footer', 'pp_widgets_load_ads');
