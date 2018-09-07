@@ -31,8 +31,5 @@ smarter('context', { name: 'placement', handler: function() {
 
 // Load integration:
 smarter('load');
-
-$div = $('#smartertravel_inline_r');
-console.log('--------->bing', $div.length);
 });
 </script>

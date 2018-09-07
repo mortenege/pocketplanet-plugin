@@ -15,8 +15,11 @@ $pp_widgets_version = '20180902';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
-  'source_code' => get_option('pp_widgets_source_code'),
+  'source_code' => get_option('pp_widgets_source_code')
 ];
+
+// set cookie names
+$PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
 
 /**
  * Get IP address of user
@@ -74,6 +77,29 @@ function pp_widgets_camref_html_callback(){
   <?php
 }
 
+function pp_widgets_prob_widget1_html_callback () {
+  $value = get_option('pp_widgets_prob_widget1', 0.5);
+  ?>
+  <input type="number" name="pp_widgets_prob_widget1" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
+  <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
+  <?php 
+}
+
+function pp_widgets_prob_widget2_html_callback () {
+  $value = get_option('pp_widgets_prob_widget2', 0.5);
+  ?>
+  <input type="number" name="pp_widgets_prob_widget2" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
+  <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
+  <?php 
+}
+
+function pp_widgets_prob_widget3_html_callback () {
+  $value = get_option('pp_widgets_prob_widget3', 0.5);
+  ?>
+  <input type="number" name="pp_widgets_prob_widget3" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
+  <small>Value between 0 and 1. Lower for Intent, higher for SmarterAds</small>
+  <?php 
+}
 /**
  * Defines settings and their respective settings sections and fields
  */
@@ -111,6 +137,36 @@ function pp_widgets_settings_init() {
     'pp_widgets_source_code',
     'SmarterAds Source Code',
     'pp_widgets_source_code_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  // add probability for widget 1 setting
+  register_setting( 'pp_widgets', 'pp_widgets_prob_widget1' );
+  add_settings_field(
+    'pp_widgets_prob_widget1',
+    'Ad Share for Search Widget',
+    'pp_widgets_prob_widget1_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  // add probability for widget 1 setting
+  register_setting( 'pp_widgets', 'pp_widgets_prob_widget2' );
+  add_settings_field(
+    'pp_widgets_prob_widget2',
+    'Ad share for Rail Widget',
+    'pp_widgets_prob_widget2_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  // add probability for widget 1 setting
+  register_setting( 'pp_widgets', 'pp_widgets_prob_widget3' );
+  add_settings_field(
+    'pp_widgets_prob_widget3',
+    'Ad share for Bottom Widget',
+    'pp_widgets_prob_widget3_html_callback',
     'pp_widgets',
     'pp_widgets_section_1'
   );
@@ -230,8 +286,8 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
   // override default attributes with user attributes
   $parsed_atts = shortcode_atts([
     'type' => 'hotel',
-    'destination' => 'Bangkok, Thailand',
-    'origin' => 'Bali',
+    'destination' => 'Bangkok',
+    // 'origin' => 'Bali',
     'date1' => date('Y-m-d'),
     'date2' => date('Y-m-d', strtotime("+3 days"))
   ], $atts, $tag);
@@ -244,12 +300,12 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
   $data['origin'] = $parsed_atts['origin'];
   $data['destination'] = $parsed_atts['destination'];
 
-  $filename = '/templates/smarterads.php';
+  $filename = '/templates/ads.php';
   ob_start();
   include dirname(__FILE__) . $filename;
   return ob_get_clean();   
 }
-add_shortcode('pp_widgets_smarterads', 'pp_widgets_smarterads_shortcode');
+add_shortcode('pp_widgets_ads', 'pp_widgets_smarterads_shortcode');
 
 /**
  * Add SmarterTravel Script in Header
@@ -265,3 +321,109 @@ add_action('wp_head', 'pp_widgets_add_smarterads_script');
 
 include "template-injector.php";
 include "meta-boxes.php";
+
+
+add_shortcode('ege_intent', 'ege_intent_shortcode');
+function ege_intent_shortcode () {
+  ?>
+<!--<div id="IntentMediaSlimIntercard"></div>-->
+<!--<div id="IntentMediaFooter"></div>-->
+<!--
+<div id="IntentMediaIntercard"></div>
+<div id="IntentMediaRail"></div>-->
+<script type="text/javascript">
+window.IntentMediaProperties = {  
+site_name: 'POCKET_PLANET',
+page_id: 'content.general',
+site_country: 'ID',
+site_language: 'en',
+site_currency: 'USD',
+/*generic*/
+travel_date_start: '20180909',
+travel_date_end: '20180910',
+travelers: '2',
+ 
+/* Hotel search parameters */
+hotel_airport_code: 'BKK',
+//hotel_city: '{{HOTEL_CITY_GOES_HERE}}',
+//hotel_country: '{{HOTEL_COUNTRY_GOES_HERE}}', 
+
+};
+(function() {
+  var script = document.createElement("script");
+  var url = '//a.cdn.intentmedia.net/javascripts/v1/intent_media_core.js';
+  script.src = url;
+  script.async = true;
+  document.getElementsByTagName("head")[0].appendChild(script);
+}());
+
+document.addEventListener('click', fireIntent);
+function fireIntent(e){
+  console.log('Clicked...', IntentMediaProperties)
+  e.preventDefault();
+
+  if(window.IntentMedia && IntentMedia.trigger) {
+    console.log('Triggered...', IntentMedia);
+    IntentMedia.trigger("open_exit_unit");
+  }
+
+}  
+</script>
+  <?php
+}
+
+add_shortcode('pp_widgets_rail', 'pp_widgets_rail_shortcode');
+function pp_widgets_rail_shortcode () {
+  $val = pp_widgets_get_cookie_value('widget2');
+  if ($val <= get_option('pp_widgets_prob_widget2', 0.5)) {
+    return '<div id="IntentMediaRail"></div>';  
+  } else {
+    return '<div id="smartertravel_inline_r"></div>';
+  }
+}
+
+add_shortcode('pp_widgets_bottom', 'pp_widgets_bottom_shortcode');
+function pp_widgets_bottom_shortcode () {
+  $val = pp_widgets_get_cookie_value('widget3');
+  if ($val <= get_option('pp_widgets_prob_widget3', 0.5)) {
+    return '<div id="IntentMediaIntercard"></div>';  
+  } else {
+    return '<div id="smartertravel_inline_b"></div>';
+  }
+}
+
+add_action('init', 'pp_widgets_set_cookie');
+function pp_widgets_set_cookie () {
+  global $PP_WIDGETS_COOKIE_NAME;
+  
+  if (!isset($_COOKIE[$PP_WIDGETS_COOKIE_NAME])){
+    global $pp_widgets_config;
+    // calculate widget probability if cookie is not set
+    
+
+    // set cookie
+    
+  }
+  $pp_widgets_config['widget_prob'] = mt_rand(0, 100000) / 100000;
+  setcookie(
+      $PP_WIDGETS_COOKIE_NAME,
+      $pp_widgets_config['widget_prob'],
+      time() + (60 * 10), // 10 minutes
+      '/'
+    );
+}
+
+function pp_widgets_get_cookie_value ($name) {
+  global $PP_WIDGETS_COOKIE_NAME;
+  global $pp_widgets_config;
+  
+  if (isset($_COOKIE[$PP_WIDGETS_COOKIE_NAME])) {
+    return $_COOKIE[$PP_WIDGETS_COOKIE_NAME];
+  }
+  return $pp_widgets_config['widget_prob'];
+}
+
+function pp_widgets_check_probability($probability=0.5, $length=10000) {
+  $test = mt_rand(1, $length);
+  return $test <= $probability * $length;
+}
