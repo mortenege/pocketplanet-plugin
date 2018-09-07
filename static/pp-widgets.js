@@ -262,7 +262,6 @@ jQuery(document).ready(function($){
         return;
       }
     }
-
     // set rest to standard values
     var data = $(this).serializeArray();
     data = data.reduce((obj, item) => {
@@ -284,6 +283,60 @@ jQuery(document).ready(function($){
       data['nonstop'] = data['nonstop'] === 'false' || data['nonstop'] === 'true' ? data['nonstop'] : 'true';    
     } else if (search_type === 'hotel') {
       data['rooms'] = data['rooms'] || 1;
+    }
+
+    if (localized_data.widget1 == 1 && search_type !== 'cruise') { // change to Intent
+      let data2 = localized_data.intent_params; 
+      data2['cache_buster'] = new Date().getTime();
+      data2['travelers'] = data['travelers'];
+      data2['travel_date_start'] = data['date1'].replace(/-/g, '');
+      data2['travel_date_end'] = data['date2'].replace(/-/g, '');
+      data2['privacy_policy_link'] = 'http://pocketplanet.com/privacy-policy/';
+
+      if (search_type === 'flight') {
+        data2['ad_unit_id'] = 'ppl_sca_flt_hom_xu_api';
+        data2['page_id'] = 'flight.home';
+        data2['product_category'] = 'FLIGHTS';
+        data2['trip_type'] = data['oneway'] ? 'oneway' : 'roundtrip';
+        data2['flight_origin'] = data['origin'];
+        data2['flight_destination'] = data['destination'];
+      }
+
+      if (search_type === 'hotel') {
+        data2['ad_unit_id'] = 'ppl_sca_hot_hom_xu_api';
+        data2['page_id'] = 'hotel.home';
+        data2['product_category'] = 'HOTELS';
+        data2['hotel_rooms'] = data['rooms'];
+        data2['hotel_city_name'] = data['destination'].split(',')[0];
+        // data2['hotel_city_name'] = 'New york';
+        // data2['hotel_country_code'] = 'US';
+        // data2['hotel_state_code'] = 'NY';
+      }
+
+      if (search_type === 'car') {
+        data2['ad_unit_id'] = 'ppl_sca_car_hom_xu_api';
+        data2['page_id'] = 'car,home';
+        data2['product_category'] = 'CARS';
+        data2['car_pickup_time'] = '1200';
+        data2['car_dropoff_time'] = '1000';
+        data2['car_pickup_city'] = 'Oslo';
+        data2['car_pickup_country'] = 'Norway';
+        data2['car_dropoff_city'] = 'Oslo';
+        data2['car_dropoff_country'] = 'Norway';
+        // data2['car_pickup_city'] = data['destination'].split(',')[0];
+        // data2['car_dropoff_city'] = data['destination'].split(',')[0];
+      }
+
+      var queryString = jQuery.param(data2);
+      var url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
+      console.log('Intent url', url)
+      $.get(url, function(response){
+        if ('url' in response) {
+          // window.location.href = response.url;
+          window.open(response.url)
+        }
+      });
+      return;
     }
 
     var queryString = jQuery.param(data);

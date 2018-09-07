@@ -10,16 +10,24 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+// set cookie names
+$PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
+$PP_WIDGETS_COOKIE_GUID_NAME = 'pp_widgets_guid';
+
 // set version number (for cache busting)
 $pp_widgets_version = '20180902';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
-  'source_code' => get_option('pp_widgets_source_code')
+  'source_code' => get_option('pp_widgets_source_code'),
+  'intent_params' => array(
+    'site' => 'POCKET_PLANET',
+    'site_country' => 'ID',
+    'site_language' => 'en',
+    'site_currency' => 'USD',
+    'publisher_user_id' => pp_widgets_get_guid(),
+  )
 ];
-
-// set cookie names
-$PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
 
 /**
  * Get IP address of user
@@ -214,6 +222,7 @@ add_action('admin_menu', 'pp_widgets_add_menu');
 /**
  * Shortcode: Load the full width search from an external source
  */
+add_shortcode( 'pp_widgets', 'pp_widgets_basic_shortcode');
 function pp_widgets_basic_shortcode($atts = [], $content = '', $tag = ''){
    // normalize attribute keys, lowercase
   $atts = array_change_key_case((array)$atts, CASE_LOWER);
@@ -229,13 +238,12 @@ function pp_widgets_basic_shortcode($atts = [], $content = '', $tag = ''){
   ob_start();
   require_once(dirname(__FILE__) . $filename);
   return ob_get_clean();   
-  // return '<h2>Hello, World</h2>';
 }
-add_shortcode( 'pp_widgets', 'pp_widgets_basic_shortcode');
 
 /**
  * enqueue the scripts needed to show and use the widgets
  */
+add_action( 'wp_enqueue_scripts', 'pp_widgets_scripts' );
 function pp_widgets_scripts() {
   global $pp_widgets_config;
   // bootstrap  
@@ -248,23 +256,27 @@ function pp_widgets_scripts() {
   // pp-widgets
   wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_config['version']);
   wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_config['version'], true );
+  
+  $cookie_val = pp_widgets_get_cookie_value('widget1');
   // Localize script
   $lData = array(
     'url' => site_url(),
     'ip_address' => pp_widgets_get_ip_address(),
     'camref' => $pp_widgets_config['camref'],
     'source_code' => $pp_widgets_config['source_code'],
+    'widget1' => ($cookie_val <= get_option('pp_widgets_prob_widget1', 0.5) ? 1 : 2),
+    'intent_params' => $pp_widgets_config['intent_params']
   );
   
   wp_localize_script('pp_widgets', 'localized_data', $lData);
   wp_enqueue_script('pp_widgets');
 }
-add_action( 'wp_enqueue_scripts', 'pp_widgets_scripts' );
 
 /**
- * Append smarter travel shortcode to each post
+ * DEPRECATED: Append smarter travel shortcode to each post
  * @return [type] [description]
  */
+/*
 function pp_widgets_add_smarterads () {
   global $post;
   if( ! $post instanceof WP_Post ) return;
@@ -272,6 +284,7 @@ function pp_widgets_add_smarterads () {
   echo do_shortcode("[pp_widgets_smarterads destination='{$post->post_title}']");
 }
 add_filter( 'wp_footer', 'pp_widgets_add_smarterads' );
+*/
 
 /**
  * SmarterTravel Short code script
@@ -280,6 +293,7 @@ add_filter( 'wp_footer', 'pp_widgets_add_smarterads' );
  * @param  string $tag     [description]
  * @return string          [description]
  */
+add_shortcode('pp_widgets_ads', 'pp_widgets_smarterads_shortcode');
 function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
    // normalize attribute keys, lowercase
   $atts = array_change_key_case((array)$atts, CASE_LOWER);
@@ -305,72 +319,6 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
   include dirname(__FILE__) . $filename;
   return ob_get_clean();   
 }
-add_shortcode('pp_widgets_ads', 'pp_widgets_smarterads_shortcode');
-
-/**
- * Add SmarterTravel Script in Header
- */
-function pp_widgets_add_smarterads_script () {
-    ?>
-<script>
-!function(e,r,t){function n(e){var r,t=document.createElement("script");t.src="//p.smarter-js.com"+e,t.async=!0,(r=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,r)}var i,a=["/ext/partner/universal-integration/universal-integration-hosted.min.js"];(i=e.smarter=e.smarter||function(e){if("register"===e){i.API_KEY=arguments&&arguments[1]?arguments[1]:null;for(var r=0;r<a.length;r++)n(a[r])}else i._queue.push(arguments)})._init||(e.SmarterTravelNetworkNS="smarter",i.BOOTSTRAP_VERSION="2.2.0",i._init=!0,i._queue=[],i("register","tC3iwejhT2m8JNEKtbA6CA"))}(window);
-</script>
-    <?php
-}
-add_action('wp_head', 'pp_widgets_add_smarterads_script');
-
-include "template-injector.php";
-include "meta-boxes.php";
-
-
-add_shortcode('ege_intent', 'ege_intent_shortcode');
-function ege_intent_shortcode () {
-  ?>
-<!--<div id="IntentMediaSlimIntercard"></div>-->
-<!--<div id="IntentMediaFooter"></div>-->
-<!--
-<div id="IntentMediaIntercard"></div>
-<div id="IntentMediaRail"></div>-->
-<script type="text/javascript">
-window.IntentMediaProperties = {  
-site_name: 'POCKET_PLANET',
-page_id: 'content.general',
-site_country: 'ID',
-site_language: 'en',
-site_currency: 'USD',
-/*generic*/
-travel_date_start: '20180909',
-travel_date_end: '20180910',
-travelers: '2',
- 
-/* Hotel search parameters */
-hotel_airport_code: 'BKK',
-//hotel_city: '{{HOTEL_CITY_GOES_HERE}}',
-//hotel_country: '{{HOTEL_COUNTRY_GOES_HERE}}', 
-
-};
-(function() {
-  var script = document.createElement("script");
-  var url = '//a.cdn.intentmedia.net/javascripts/v1/intent_media_core.js';
-  script.src = url;
-  script.async = true;
-  document.getElementsByTagName("head")[0].appendChild(script);
-}());
-
-document.addEventListener('click', fireIntent);
-function fireIntent(e){
-  console.log('Clicked...', IntentMediaProperties)
-  e.preventDefault();
-
-  if(window.IntentMedia && IntentMedia.trigger) {
-    console.log('Triggered...', IntentMedia);
-    IntentMedia.trigger("open_exit_unit");
-  }
-
-}  
-</script>
-  <?php
-}
 
 add_shortcode('pp_widgets_rail', 'pp_widgets_rail_shortcode');
 function pp_widgets_rail_shortcode () {
@@ -395,22 +343,33 @@ function pp_widgets_bottom_shortcode () {
 add_action('init', 'pp_widgets_set_cookie');
 function pp_widgets_set_cookie () {
   global $PP_WIDGETS_COOKIE_NAME;
+  global $PP_WIDGETS_COOKIE_GUID_NAME;
   
   if (!isset($_COOKIE[$PP_WIDGETS_COOKIE_NAME])){
     global $pp_widgets_config;
     // calculate widget probability if cookie is not set
-    
-
+    $pp_widgets_config['widget_prob'] = mt_rand(0, 100000) / 100000;
     // set cookie
-    
-  }
-  $pp_widgets_config['widget_prob'] = mt_rand(0, 100000) / 100000;
-  setcookie(
+    setcookie(
       $PP_WIDGETS_COOKIE_NAME,
       $pp_widgets_config['widget_prob'],
       time() + (60 * 10), // 10 minutes
       '/'
     );
+  }
+
+  if (!isset($_COOKIE[$PP_WIDGETS_COOKIE_GUID_NAME])){
+    global $pp_widgets_config;
+    // Create a GUID
+    $pp_widgets_config['intent_params']['publisher_user_id'] = substr(com_create_guid(), 1, -1);
+    // set cookie
+    setcookie(
+      $PP_WIDGETS_COOKIE_GUID_NAME,
+      $pp_widgets_config['intent_params']['publisher_user_id'],
+      time() + (60 * 60 * 24 * 30), // 30 days
+      '/'
+    ); 
+  }
 }
 
 function pp_widgets_get_cookie_value ($name) {
@@ -423,12 +382,35 @@ function pp_widgets_get_cookie_value ($name) {
   return $pp_widgets_config['widget_prob'];
 }
 
-function pp_widgets_check_probability($probability=0.5, $length=10000) {
-  $test = mt_rand(1, $length);
-  return $test <= $probability * $length;
-}
-
+add_action('wp_footer', 'pp_widgets_load_ads');
 function pp_widgets_load_ads () {
   echo do_shortcode('[pp_widgets_ads]');
 }
-add_action('wp_footer', 'pp_widgets_load_ads');
+
+/**
+ * Add SmarterTravel Script in Header
+ */
+add_action('wp_head', 'pp_widgets_add_smarterads_script');
+function pp_widgets_add_smarterads_script () {
+    ?>
+<script>
+!function(e,r,t){function n(e){var r,t=document.createElement("script");t.src="//p.smarter-js.com"+e,t.async=!0,(r=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,r)}var i,a=["/ext/partner/universal-integration/universal-integration-hosted.min.js"];(i=e.smarter=e.smarter||function(e){if("register"===e){i.API_KEY=arguments&&arguments[1]?arguments[1]:null;for(var r=0;r<a.length;r++)n(a[r])}else i._queue.push(arguments)})._init||(e.SmarterTravelNetworkNS="smarter",i.BOOTSTRAP_VERSION="2.2.0",i._init=!0,i._queue=[],i("register","tC3iwejhT2m8JNEKtbA6CA"))}(window);
+</script>
+    <?php
+}
+
+include "template-injector.php";
+include "meta-boxes.php";
+
+function pp_widgets_get_guid(){
+  global $PP_WIDGETS_COOKIE_GUID_NAME;
+  if (isset($_COOKIE[$PP_WIDGETS_COOKIE_GUID_NAME])){
+    return $_COOKIE[$PP_WIDGETS_COOKIE_GUID_NAME];
+  }
+
+  if ($pp_widgets_config['intent_params']['publisher_user_id']) {
+    return $pp_widgets_config['intent_params']['publisher_user_id'];
+  }
+
+  return substr(com_create_guid(), 1, -1);
+}
