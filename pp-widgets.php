@@ -49,7 +49,11 @@ function pp_widgets_get_ip_address() {
 /**
  * Empty Wordpress section HTML
  */
-function pp_widgets_section_html_callback(){}
+function pp_widgets_section_html_callback(){
+  ?>
+  <p><strong>Remember</strong> to purge the cache when updating these values. Otherwise they will not be reflected on the frontend.</p>
+  <?php
+}
 
 /**
  * Loads the 'upload background image' field
@@ -106,6 +110,30 @@ function pp_widgets_prob_widget3_html_callback () {
   ?>
   <input type="number" name="pp_widgets_prob_widget3" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
   <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
+  <?php 
+}
+
+function pp_widgets_prob_widget4_html_callback () {
+  $value = get_option('pp_widgets_prob_widget4', 0.5);
+  ?>
+  <input type="number" name="pp_widgets_prob_widget4" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
+  <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
+  <?php 
+}
+
+function pp_widgets_disable_intent_html_callback () {
+  $value = get_option('pp_widgets_disable_intent', false);
+  ?>
+  <input type="checkbox" name="pp_widgets_disable_intent" value="1" <?php checked($value); ?> />
+  <small>Remember to set corresponding values above if enabled</small>
+  <?php 
+}
+
+function pp_widgets_disable_smartertravel_html_callback () {
+  $value = get_option('pp_widgets_disable_smartertravel', false);
+  ?>
+  <input type="checkbox" name="pp_widgets_disable_smartertravel" value="1" <?php checked($value); ?> />
+  <small>Remember to set corresponding values above if enabled</small>
   <?php 
 }
 /**
@@ -175,6 +203,34 @@ function pp_widgets_settings_init() {
     'pp_widgets_prob_widget3',
     'Ad share for Bottom Widget',
     'pp_widgets_prob_widget3_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  // add probability for widget 4 setting
+  register_setting( 'pp_widgets', 'pp_widgets_prob_widget4' );
+  add_settings_field(
+    'pp_widgets_prob_widget4',
+    'Ad share for Overlay Ads',
+    'pp_widgets_prob_widget4_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  register_setting( 'pp_widgets', 'pp_widgets_disable_intent' );
+  add_settings_field(
+    'pp_widgets_disable_intent',
+    'Disable Intent Media completely',
+    'pp_widgets_disable_intent_html_callback',
+    'pp_widgets',
+    'pp_widgets_section_1'
+  );
+
+  register_setting( 'pp_widgets', 'pp_widgets_disable_smartertravel' );
+  add_settings_field(
+    'pp_widgets_disable_smartertravel',
+    'Disable Smarter Travel completely',
+    'pp_widgets_disable_smartertravel_html_callback',
     'pp_widgets',
     'pp_widgets_section_1'
   );
@@ -315,6 +371,14 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
   $data['destination'] = $parsed_atts['destination'];
 
   $filename = '/templates/ads.php';
+  $val = pp_widgets_get_cookie_value();
+  if ($val <= get_option('pp_widgets_prob_widget4', 0.5)) {
+    $show_intent_overlays = true;
+    $show_smarter_overlays = false;
+  } else {
+    $show_intent_overlays = false;
+    $show_smarter_overlays = true;
+  }
   ob_start();
   include dirname(__FILE__) . $filename;
   return ob_get_clean();   
