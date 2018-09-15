@@ -1,8 +1,4 @@
 /*
-Plugin Name:  pocketplanet widgets
-Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
-Description:  Custom Created widgets for pocketplanet.com
-Version:      20180823
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -65,6 +61,9 @@ jQuery(document).ready(function($){
       var json = response
       var loc = json.name + ', ' + json.country_name + ' (' + json.iata + ')';
       $origin.val(loc);
+      $origin.attr('data-code', json.iata);
+      $origin.attr('data-country-name', json.country_name);
+      $origin.attr('data-name', json.name);
     });
   })
 
@@ -111,15 +110,31 @@ jQuery(document).ready(function($){
      * @param  {[type]} $dropdown [description]
      * @param  {Array|Object} results   [description]
      */
-    function open_dropdown_box($input, $dropdown, results) {
+    function open_dropdown_box($input, $dropdown, results, type = 'airport') {
       $dropdown.empty();
       // fill dropdown with data
-      for (let key in results) {
-        let $el = $('<div></div>').text(results[key]);
-        $el.attr('data-code', key);
+      for (let i in results) {
+        let loc = results[i]
+        let str = parse_api_result(loc, type);
+        let $el = $('<div></div>').text(str);
+        $el.attr('data-code', loc.code);
+        $el.attr('data-country-code', loc.country_code);
+        $el.attr('data-country-name', loc.country_name);
+        $el.attr('data-state-code', loc.state_code);
+        $el.attr('data-city-name', loc.city_name || loc.name);
+        $el.attr('data-type', loc.type);
+        $el.attr('data-name', loc.name);
+        
+
         $el.on('click', function(e){
           $input.val($(this).text());
           $input.attr('data-code', $(this).attr('data-code'));
+          $input.attr('data-country-name', $(this).attr('data-country-name'));
+          $input.attr('data-country-code', $(this).attr('data-country-code'));
+          $input.attr('data-state-code', $(this).attr('data-state-code'));
+          $input.attr('data-city-name', $(this).attr('data-city-name'));
+          $input.attr('data-type', $(this).attr('data-type'));
+          $input.attr('data-name', $(this).attr('data-name'));
           close_dropdown_box($dropdown);
           e.stopPropagation();
         });
@@ -177,6 +192,14 @@ jQuery(document).ready(function($){
       // get input and dropdown elements
       var $input = $(this);
       var $dropdown = $input.closest('div.form-group').find('.pp-widgets-suggestions');
+      // clear infrmation
+      $input.removeAttr('data-code');
+      $input.removeAttr('data-country-name');
+      $input.removeAttr('data-city-name');
+      $input.removeAttr('data-country-code');
+      $input.removeAttr('data-state-code');
+      $input.removeAttr('data-type');
+      $input.removeAttr('data-name');
 
       // get searcg term
       var val = $input.val();
@@ -195,16 +218,8 @@ jQuery(document).ready(function($){
       }
 
       $.get(url, function(response, status){
-        var results = {};
-        
         var type = types.indexOf('airport') >= 0 ? 'airport' : 'city';
-        for (let i in response) {
-          a = response[i]
-          let str = parse_api_result(a, type);
-          results[a.code] = str;
-        }
-        // console.log('----->', response, results);
-        open_dropdown_box($input, $dropdown, results);
+        open_dropdown_box($input, $dropdown, response, type);
       });
     }
 
@@ -285,7 +300,20 @@ jQuery(document).ready(function($){
       data['rooms'] = data['rooms'] || 1;
     }
 
-    if (localized_data.widget1 == 1 && search_type !== 'cruise') { // change to Intent
+    /*
+     * for INTENT
+     */
+    if (localized_data.widget1 == 1 && search_type !== 'cruise') {
+      // Hack to get first value in suggestboxes
+      if ($origin) {
+        let $origin_dropdown = $origin.closest('div.form-group').find('.pp-widgets-suggestions');
+        let $firstOrigin = $origin_dropdown.find('[data-code]').first();
+        $firstOrigin = $firstOrigin.length > 0 ? $($firstOrigin) : null;
+      }
+      let $destination_dropdown = $destination.closest('div.form-group').find('.pp-widgets-suggestions');
+      let $firstDestination = $destination_dropdown.find('[data-code]').first();
+      $firstDestination = $firstDestination.length > 0 ? $($firstDestination) : null;
+
       let data2 = localized_data.intent_params; 
       data2['cache_buster'] = new Date().getTime();
       data2['travelers'] = data['travelers'];
@@ -298,8 +326,10 @@ jQuery(document).ready(function($){
         data2['page_id'] = 'flight.home';
         data2['product_category'] = 'FLIGHTS';
         data2['trip_type'] = data['oneway'] ? 'oneway' : 'roundtrip';
-        data2['flight_origin'] = data['origin'];
-        data2['flight_destination'] = data['destination'];
+        data2['flight_origin'] = $origin.attr('data-code') || 
+          ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
+        data2['flight_destination'] = $destination.attr('data-code') || 
+          ($firstDestination ? $firstDestination.attr('data-code') : $data['destination']);
       }
 
       if (search_type === 'hotel') {
@@ -307,10 +337,21 @@ jQuery(document).ready(function($){
         data2['page_id'] = 'hotel.home';
         data2['product_category'] = 'HOTELS';
         data2['hotel_rooms'] = data['rooms'];
-        data2['hotel_city_name'] = data['destination'].split(',')[0];
-        // data2['hotel_city_name'] = 'New york';
-        // data2['hotel_country_code'] = 'US';
-        // data2['hotel_state_code'] = 'NY';
+        let destination_arr = data['destination'].split(',')[0];
+        let destination_city = destination_arr[0];
+        let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
+        data2['hotel_city_name'] = $destination.attr('data-city-name') || 
+          ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
+        data2['hotel_country_code'] = $destination.attr('data-country-code') || 
+          ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
+        data2['hotel_state_code'] = '';
+        if (data2['hotel_country_code'] == 'US') {
+          let state_code = $destination.attr('data-state-code') || 
+            ($firstDestination ? $firstDestination.attr('data-state-code') : null);
+          if (state_code) {
+            data2['hotel_state_code'] = state_code;
+          }
+        }
       }
 
       if (search_type === 'car') {
@@ -319,21 +360,36 @@ jQuery(document).ready(function($){
         data2['product_category'] = 'CARS';
         data2['car_pickup_time'] = '1200';
         data2['car_dropoff_time'] = '1000';
-        data2['car_pickup_city'] = 'Oslo';
-        data2['car_pickup_country'] = 'Norway';
-        data2['car_dropoff_city'] = 'Oslo';
-        data2['car_dropoff_country'] = 'Norway';
-        // data2['car_pickup_city'] = data['destination'].split(',')[0];
-        // data2['car_dropoff_city'] = data['destination'].split(',')[0];
+
+        let destination_arr = data['destination'].split(',')[0];
+        let destination_city = destination_arr[0];
+        let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
+
+        data2['car_pickup_city'] = $destination.attr('data-city-name') || 
+          ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
+        data2['car_pickup_country'] = $destination.attr('data-country-code') || 
+          ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
+        data2['car_pickup_state'] = ''
+        if (data2['car_pickup_country'] == 'US') {
+          let state_code = $destination.attr('data-state-code') || 
+            ($firstDestination ? $firstDestination.attr('data-state-code') : null);
+          if (state_code) {
+            data2['car_pickup_state'] = state_code;
+          }
+        }
+        data2['car_dropoff_city'] = data2['car_pickup_city'];
+        data2['car_dropoff_country'] = data2['car_pickup_country'];
+        data2['car_dropoff_state'] = data2['car_pickup_state'];
       }
 
       var queryString = jQuery.param(data2);
       var url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
-      console.log('Intent url', url)
+      var win = window.open();
       $.get(url, function(response){
-        if ('url' in response) {
-          // window.location.href = response.url;
-          window.open(response.url)
+        if (response && 'url' in response) {
+          win.location.href = response.url;
+        } else {
+          win.close();
         }
       });
       return;

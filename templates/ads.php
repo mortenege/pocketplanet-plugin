@@ -3,6 +3,17 @@
 jQuery(document).ready(function ($) {
   // Load smarter ads
   smarter('reset');
+  smarter('config', {
+    loadPlacements: [
+      'inlineB', // Inline Banner (horizontal)
+      'inlineM', // Inline Banner for Mobile
+      'inlineR', // Inline Rail (vertical)
+      'leaveBehind',
+      //'mobileOverlay',
+      //'overlay',
+      'widgetNoCheckboxes'
+    ]
+  });
   smarter('context', {
     name: 'placement',
     handler: function() {
@@ -42,7 +53,12 @@ window.IntentMediaProperties = {
   // hotel_airport_code: '',
   hotel_city: '<?= $data['destination']; ?>',
   // hotel_country: '', 
-
+  
+  // TODO: Does not work yet
+  // show_inactivity_overlays: "N",
+  // show_mouseleave_overlays: "N",
+  // show_mobile_ribbon: false,
+  // show_ribbon: false
 };
 
 (function() {

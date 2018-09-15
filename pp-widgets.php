@@ -15,7 +15,7 @@ $PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
 $PP_WIDGETS_COOKIE_GUID_NAME = 'pp_widgets_guid';
 
 // set version number (for cache busting)
-$pp_widgets_version = '20180902';
+$pp_widgets_version = '20180902111';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
@@ -105,7 +105,7 @@ function pp_widgets_prob_widget3_html_callback () {
   $value = get_option('pp_widgets_prob_widget3', 0.5);
   ?>
   <input type="number" name="pp_widgets_prob_widget3" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
-  <small>Value between 0 and 1. Lower for Intent, higher for SmarterAds</small>
+  <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
   <?php 
 }
 /**
@@ -257,7 +257,7 @@ function pp_widgets_scripts() {
   wp_enqueue_style('pp_widgets', plugins_url('static/pp-widgets.css', __FILE__), array(), $pp_widgets_config['version']);
   wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_config['version'], true );
   
-  $cookie_val = pp_widgets_get_cookie_value('widget1');
+  $cookie_val = pp_widgets_get_cookie_value();
   // Localize script
   $lData = array(
     'url' => site_url(),
@@ -322,7 +322,7 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
 
 add_shortcode('pp_widgets_rail', 'pp_widgets_rail_shortcode');
 function pp_widgets_rail_shortcode () {
-  $val = pp_widgets_get_cookie_value('widget2');
+  $val = pp_widgets_get_cookie_value();
   if ($val <= get_option('pp_widgets_prob_widget2', 0.5)) {
     return '<div id="IntentMediaRail"></div>';  
   } else {
@@ -332,7 +332,7 @@ function pp_widgets_rail_shortcode () {
 
 add_shortcode('pp_widgets_bottom', 'pp_widgets_bottom_shortcode');
 function pp_widgets_bottom_shortcode () {
-  $val = pp_widgets_get_cookie_value('widget3');
+  $val = pp_widgets_get_cookie_value();
   if ($val <= get_option('pp_widgets_prob_widget3', 0.5)) {
     return '<div id="IntentMediaIntercard"></div>';  
   } else {
@@ -372,7 +372,7 @@ function pp_widgets_set_cookie () {
   }
 }
 
-function pp_widgets_get_cookie_value ($name) {
+function pp_widgets_get_cookie_value () {
   global $PP_WIDGETS_COOKIE_NAME;
   global $pp_widgets_config;
   
