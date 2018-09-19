@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20180902
+Version:      20180919
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -15,7 +15,7 @@ $PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
 $PP_WIDGETS_COOKIE_GUID_NAME = 'pp_widgets_guid';
 
 // set version number (for cache busting)
-$pp_widgets_version = '20180902111';
+$pp_widgets_version = '20180919';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
@@ -26,7 +26,8 @@ $pp_widgets_config = [
     'site_language' => 'en',
     'site_currency' => 'USD',
     'publisher_user_id' => pp_widgets_get_guid(),
-  )
+  ),
+  'force_intent' => isset($_COOKIE['force_intent']) ? ($_COOKIE['force_intent'] ? true : false) : false,
 ];
 
 /**
@@ -329,20 +330,6 @@ function pp_widgets_scripts() {
 }
 
 /**
- * DEPRECATED: Append smarter travel shortcode to each post
- * @return [type] [description]
- */
-/*
-function pp_widgets_add_smarterads () {
-  global $post;
-  if( ! $post instanceof WP_Post ) return;
-  if ( 'post' !== $post->post_type ) return;
-  echo do_shortcode("[pp_widgets_smarterads destination='{$post->post_title}']");
-}
-add_filter( 'wp_footer', 'pp_widgets_add_smarterads' );
-*/
-
-/**
  * SmarterTravel Short code script
  * @param  array  $atts    [description]
  * @param  string $content [description]
@@ -351,6 +338,7 @@ add_filter( 'wp_footer', 'pp_widgets_add_smarterads' );
  */
 add_shortcode('pp_widgets_ads', 'pp_widgets_smarterads_shortcode');
 function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
+  global $pp_widgets_config;
    // normalize attribute keys, lowercase
   $atts = array_change_key_case((array)$atts, CASE_LOWER);
   // override default attributes with user attributes
@@ -369,10 +357,16 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
   $data['date2'] = $parsed_atts['date2'];
   $data['origin'] = $parsed_atts['origin'];
   $data['destination'] = $parsed_atts['destination'];
+  $data['city'] = get_post_meta(get_the_ID(), 'pp_widgets_post_city', true);
+  $data['city'] = $data['city'] ? $data['city'] : $data['destination'];
+  $data['country'] = get_post_meta(get_the_ID(), 'pp_widgets_post_country', true);
+  $data['force_intent'] = $pp_widgets_config['force_intent'];
+  $data['disable_intent'] = !$data['force_intent'] && get_option('pp_widgets_disable_intent', false);
+  $data['disable_smartertravel'] = $data['force_intent'] || get_option('pp_widgets_disable_smartertravel', false);
 
   $filename = '/templates/ads.php';
   $val = pp_widgets_get_cookie_value();
-  if ($val <= get_option('pp_widgets_prob_widget4', 0.5)) {
+  if ($data['force_intent'] || $val <= get_option('pp_widgets_prob_widget4', 0.5)) {
     $show_intent_overlays = true;
     $show_smarter_overlays = false;
   } else {
@@ -386,8 +380,10 @@ function pp_widgets_smarterads_shortcode($atts = [], $content = '', $tag = ''){
 
 add_shortcode('pp_widgets_rail', 'pp_widgets_rail_shortcode');
 function pp_widgets_rail_shortcode () {
+  global $pp_widgets_config;
+  $force_intent = $pp_widgets_config['force_intent'];
   $val = pp_widgets_get_cookie_value();
-  if ($val <= get_option('pp_widgets_prob_widget2', 0.5)) {
+  if ($force_intent || $val <= get_option('pp_widgets_prob_widget2', 0.5)) {
     return '<div id="IntentMediaRail"></div>';  
   } else {
     return '<div id="smartertravel_inline_r"></div>';
@@ -396,8 +392,10 @@ function pp_widgets_rail_shortcode () {
 
 add_shortcode('pp_widgets_bottom', 'pp_widgets_bottom_shortcode');
 function pp_widgets_bottom_shortcode () {
+  global $pp_widgets_config;
+  $force_intent = $pp_widgets_config['force_intent'];
   $val = pp_widgets_get_cookie_value();
-  if ($val <= get_option('pp_widgets_prob_widget3', 0.5)) {
+  if ($force_intent || $val <= get_option('pp_widgets_prob_widget3', 0.5)) {
     return '<div id="IntentMediaIntercard"></div>';  
   } else {
     return '<div id="smartertravel_inline_b"></div>';
@@ -492,3 +490,103 @@ function getGUID(){
     .chr(125);// "}"
   return $uuid;
 }
+
+/**
+ * Remember to 'flush' rewrite rules upon changes
+ * >> settings->permalinks->save (without making changes)
+ */
+
+class PPWidgets {
+
+  public function __construct(){
+    add_action( 'add_meta_boxes', array(self::class, 'addCityCountryMetaBox' ));
+    add_action( 'save_post', [self::class, 'savePostMeta']);
+
+    add_action('init', [self::class, 'addForceIntentRewriteRule']);
+    add_action('wp_ajax_pp_widgets_force_intent_on', [self::class, 'setForceIntentCookieOn']);
+    add_action('wp_ajax_nopriv_pp_widgets_force_intent_on', [self::class, 'setForceIntentCookieOn']);
+    add_action('wp_ajax_pp_widgets_force_intent_off', [self::class, 'setForceIntentCookieOff']);
+    add_action('wp_ajax_nopriv_pp_widgets_force_intent_off', [self::class, 'setForceIntentCookieOff']);
+  }
+
+
+  public static function setForceIntentCookieOn () {
+    setcookie(
+      'force_intent',
+      1,
+      time() + (60 * 60 * 24), // 1 day
+      '/'
+    );
+    ?>
+    <p>Force Intent Cookie is On</p>
+    <?php
+    wp_die();
+  }
+
+  public static function setForceIntentCookieOff () {
+    setcookie(
+      'force_intent',
+      0,
+      0,
+      '/'
+    );
+    ?>
+    <p>Force Intent Cookie is Off</p>
+    <?php
+    wp_die();
+  }
+
+  public static function addForceIntentRewriteRule () {
+    add_rewrite_rule(
+      '^force_intent_on',
+      'wp-admin/admin-ajax.php?action=pp_widgets_force_intent_on',
+      'top'
+    );
+
+    add_rewrite_rule(
+      '^force_intent_off',
+      'wp-admin/admin-ajax.php?action=pp_widgets_force_intent_off',
+      'top'
+    );
+  }
+
+  public static function savePostMeta ($post_id) {
+    if (array_key_exists('pp_widgets_post_city', $_POST)) {
+      update_post_meta(
+        $post_id,
+        'pp_widgets_post_city',
+        $_POST['pp_widgets_post_city']
+      );
+    }
+
+    if (array_key_exists('pp_widgets_post_country', $_POST)) {
+      update_post_meta(
+        $post_id,
+        'pp_widgets_post_country',
+        $_POST['pp_widgets_post_country']
+      );
+    }
+  }
+
+  public static function addCityCountryMetaBox () {
+    add_meta_box(
+      'pp_widgets_location_mb',
+      'Set City and Country',
+      [self::class, 'metaboxCityCountryHtml'],
+      ['post', 'page'],
+      'normal'
+    );
+  }
+
+  public static function metaboxCityCountryHtml ($post) {
+    $city = get_post_meta($post->ID, 'pp_widgets_post_city', true);
+    $country = get_post_meta($post->ID, 'pp_widgets_post_country', true);
+    ?>
+    <p>Enter the City and Country for use with Intent Media</p>
+    <input type="text" name="pp_widgets_post_city" placeholder="City" value="<?= $city; ?>"/>
+    <input type="text" name="pp_widgets_post_country" placeholder="Country" value="<?= $country; ?>" />
+    <?php
+  }
+}
+
+new PPWidgets();

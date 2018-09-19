@@ -1,6 +1,5 @@
 <script>
-
-<?php if (!get_option('pp_widgets_disable_smartertravel', false)): ?>
+<?php if (!$data['disable_smartertravel']): ?>
 jQuery(document).ready(function ($) {
   // Load smarter ads
   smarter('reset');
@@ -42,24 +41,26 @@ jQuery(document).ready(function ($) {
 });
 <?php endif; ?>
 
-<?php if (!get_option('pp_widgets_disable_intent', false)): ?>
+<?php if (!$data['disable_intent']): ?>
 window.IntentMediaProperties = {  
   site_name: 'POCKET_PLANET',
-  page_id: 'content.general',
   site_country: 'ID',
   site_language: 'en',
   site_currency: 'USD',
+   
+  <?php if ($data['city']): ?>
+  page_id: 'content.general',
   /*generic*/
   travel_date_start: '<?= $data['date1']; ?>',
   travel_date_end: '<?= $data['date2']; ?>',
   travelers: '2',
-   
-  /* Hotel search parameters */
-  // hotel_airport_code: '',
-  hotel_city: '<?= $data['destination']; ?>',
-  // hotel_country: '', 
+  hotel_city: '<?= $data['city']; ?>',
+  <?php endif; ?>
+  <?php if ($data['city'] && $data['country']): ?>
+  hotel_country: '<?= $data['country']; ?>',
+  <?php endif; ?>
   
-  <?php if ($show_intent_overlays === false): ?> 
+  <?php if (!$data['force_intent'] && $show_intent_overlays === false): ?> 
   show_inactivity_overlays: "N",
   show_mouseleave_overlays: "N",
   show_mobile_ribbon: "N",

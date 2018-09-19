@@ -57,7 +57,7 @@ jQuery(document).ready(function($){
     var $origin = $('#pp-widgets-origin').first();
     if (!$origin || $origin.val()) return;
     
-    $.get('http://travelpayouts.com/whereami?locale=en&ip='+ip, function(response, status){
+    $.get('https://travelpayouts.com/whereami?locale=en&ip='+ip, function(response, status){
       var json = response
       var loc = json.name + ', ' + json.country_name + ' (' + json.iata + ')';
       $origin.val(loc);
@@ -209,7 +209,7 @@ jQuery(document).ready(function($){
         return 'types[]=' + type.trim();
       }).join('&');
       // generate url
-      var url = 'http://autocomplete.travelpayouts.com/places2?term=' + val + '&locale=en&' + types;
+      var url = 'https://autocomplete.travelpayouts.com/places2?term=' + val + '&locale=en&' + types;
 
       clear_dropdown_box($dropdown);
       if (!val) {
@@ -319,7 +319,7 @@ jQuery(document).ready(function($){
       data2['travelers'] = data['travelers'];
       data2['travel_date_start'] = data['date1'].replace(/-/g, '');
       data2['travel_date_end'] = data['date2'].replace(/-/g, '');
-      data2['privacy_policy_link'] = 'http://pocketplanet.com/privacy-policy/';
+      data2['privacy_policy_link'] = 'https://pocketplanet.com/privacy-policy/';
 
       if (search_type === 'flight') {
         data2['ad_unit_id'] = 'ppl_sca_flt_hom_xu_api';
@@ -383,7 +383,7 @@ jQuery(document).ready(function($){
       }
 
       var queryString = jQuery.param(data2);
-      var url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
+      var url = "https://a.intentmedia.net/api/sca/v1/exit_units?noLimit=true&popsOver=true&" + queryString;
       var win = window.open();
       $.get(url, function(response){
         if (response && 'url' in response) {
