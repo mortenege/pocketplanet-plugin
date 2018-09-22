@@ -30,7 +30,7 @@ if ($pp_widgets_image_url) {
           <div class="col-12 col-md-4">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Pick Up Location</label>
-              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or country destination" autocomplete="off" data-search-types="city,country"/>
+              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or country destination" autocomplete="off" data-search-types="city"/>
               <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>

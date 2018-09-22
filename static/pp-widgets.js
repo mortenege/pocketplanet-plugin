@@ -204,7 +204,7 @@ jQuery(document).ready(function($){
       // get searcg term
       var val = $input.val();
       // get types of search
-      var types = $input.attr('data-search-types') || 'country,city,airport';
+      var types = $input.attr('data-search-types') || 'city,airport';
       types = types.split(',').map(function(type){
         return 'types[]=' + type.trim();
       }).join('&');
@@ -383,11 +383,17 @@ jQuery(document).ready(function($){
       }
 
       var queryString = jQuery.param(data2);
-      var url = "https://a.intentmedia.net/api/sca/v1/exit_units?noLimit=true&popsOver=true&" + queryString;
+      if (window.IntentIsBlocked === false || window.IntentIsBlocked === null) {
+        console.log('NOT BLOCKED');
+        var url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
+      } else {
+        console.log('BLOCKED');
+        var url = "https://compare.pocketplanet.com/api/sca/v1/exit_units?alt_svc=Y&" + queryString;
+      }
       var win = window.open();
       $.get(url, function(response){
         if (response && 'url' in response) {
-          win.location.href = response.url;
+          win.location.href = response.url + "&nolimit=true&popsOver=true";
         } else {
           win.close();
         }

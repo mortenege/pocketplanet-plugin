@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20180919
+Version:      20180921
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -15,7 +15,7 @@ $PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
 $PP_WIDGETS_COOKIE_GUID_NAME = 'pp_widgets_guid';
 
 // set version number (for cache busting)
-$pp_widgets_version = '20180919';
+$pp_widgets_version = '201809212';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),
@@ -315,13 +315,14 @@ function pp_widgets_scripts() {
   wp_register_script( 'pp_widgets', plugins_url('static/pp-widgets.js', __FILE__), array('jquery'), $pp_widgets_config['version'], true );
   
   $cookie_val = pp_widgets_get_cookie_value();
+  $force_intent = $pp_widgets_config['force_intent'];
   // Localize script
   $lData = array(
     'url' => site_url(),
     'ip_address' => pp_widgets_get_ip_address(),
     'camref' => $pp_widgets_config['camref'],
     'source_code' => $pp_widgets_config['source_code'],
-    'widget1' => ($cookie_val <= get_option('pp_widgets_prob_widget1', 0.5) ? 1 : 2),
+    'widget1' => ($force_intent || $cookie_val <= get_option('pp_widgets_prob_widget1', 0.5) ? 1 : 2),
     'intent_params' => $pp_widgets_config['intent_params']
   );
   

@@ -1,4 +1,85 @@
 <script>
+
+<?php if (is_front_page()): ?>
+/*
+ *
+ * interface:
+ *
+ * adBlockDetector({
+ *     onIsBlocked: doSomethingSpecial, // optional callback function
+ *     onNotBlocked: doSomethingNormal, // optional callback function
+ *     onTimedout: handleError, // optional callback function
+ *     timeout: 1500 // optional integer
+ * });
+ *
+ * */
+
+function isFn(uhhFn) { return typeof uhhFn === 'function'; }
+
+// adblockers will intercept requests containing 'ad', some others block certain domains
+// either way - if we can fetch an image from our CDN, we can get scripts & make requests
+function intentMediaCDN() { 
+  return window.location.protocol + '//a.cdn.intentmedia.net/images/ad.png'; 
+}
+
+function invisibleImageFrom(srcUrl) {
+  // positioned off screen to top and left will not show scroll bars
+  var invisible = 'position:absolute;left:-100px;top:-100px;height:1px;width:1px;pointer-events:none;';
+  var img = document.createElement('img');
+  img.setAttribute('src', srcUrl);
+  img.setAttribute('style', invisible);
+  return img;
+}
+
+function cleanup(adBlockedImg, timeout) {
+  if (timeout) { clearTimeout(timeout); }
+  if (adBlockedImg.parentElement && adBlockedImg.parentElement.contains(adBlockedImg)) {
+      adBlockedImg.parentElement.removeChild(adBlockedImg);
+  }
+}
+
+function adBlockDetector(opts) {
+  opts = opts || {};
+
+  // img onsuccess / onerror fns are fired on all browsers w/ adBlockers
+  // scripts, iframes & requests don't always signal when they are blocked
+  var adBlockedImg = invisibleImageFrom(intentMediaCDN());
+
+  var timeoutTimer = setTimeout(() => { // something went wrong - remove the img from DOM
+      if (isFn(opts.onTimedout)) { opts.onTimedout(); }
+      cleanup(adBlockedImg);
+  }, opts.timeout || 1500);
+
+  if (isFn(opts.onIsBlocked)) {
+      adBlockedImg.onerror = () => { // img not loaded, our cdn is intercepted by adBlockers
+          opts.onIsBlocked();
+          cleanup(adBlockedImg, timeoutTimer);
+      };
+  }
+
+  if (isFn(opts.onNotBlocked)) {
+      adBlockedImg.onload = () => { // img loaded, we can request resources from our cdn
+          opts.onNotBlocked();
+          cleanup(adBlockedImg, timeoutTimer);
+      };
+  }
+
+  document.body.appendChild(adBlockedImg);
+}
+
+(function(){
+  window.IntentIsBlocked = null;
+  adBlockDetector({
+    onIsBlocked: function(){
+      window.IntentIsBlocked = true;
+    },
+    onNotBlocked: function(){
+      window.IntentIsBlocked = false;
+    }
+  })
+}());
+<?php endif;?>
+
 <?php if (!$data['disable_smartertravel']): ?>
 jQuery(document).ready(function ($) {
   // Load smarter ads
@@ -41,19 +122,19 @@ jQuery(document).ready(function ($) {
 });
 <?php endif; ?>
 
-<?php if (!$data['disable_intent']): ?>
+<?php if (!$data['disable_intent'] && !is_front_page()): ?>
 window.IntentMediaProperties = {  
   site_name: 'POCKET_PLANET',
   site_country: 'ID',
   site_language: 'en',
   site_currency: 'USD',
-   
-  <?php if ($data['city']): ?>
   page_id: 'content.general',
   /*generic*/
   travel_date_start: '<?= $data['date1']; ?>',
   travel_date_end: '<?= $data['date2']; ?>',
   travelers: '2',
+   
+  <?php if ($data['city']): ?>
   hotel_city: '<?= $data['city']; ?>',
   <?php endif; ?>
   <?php if ($data['city'] && $data['country']): ?>
@@ -70,7 +151,8 @@ window.IntentMediaProperties = {
 
 (function() {
   var script = document.createElement("script");
-  var url = '//a.cdn.intentmedia.net/javascripts/v1/intent_media_core.js';
+  var url = "https://compare.pocketplanet.com/javascripts/v1/p/alt_core.js";
+  // var url = '//a.cdn.intentmedia.net/javascripts/v1/intent_media_core.js';
   script.src = url;
   script.async = true;
   document.getElementsByTagName("head")[0].appendChild(script);
