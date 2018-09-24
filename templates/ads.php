@@ -1,5 +1,5 @@
 <script>
-<?php if (get_page_template_slug() != 'templates/page-pocketplanet.php'): ?>
+<?php if (get_page_template_slug() == 'templates/page-pocketplanet.php'): ?>
 /*
  *
  * interface:
