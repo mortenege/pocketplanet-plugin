@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20180921
+Version:      20180924
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -15,7 +15,7 @@ $PP_WIDGETS_COOKIE_NAME = 'pp_widgets';
 $PP_WIDGETS_COOKIE_GUID_NAME = 'pp_widgets_guid';
 
 // set version number (for cache busting)
-$pp_widgets_version = '201809212';
+$pp_widgets_version = '20180924';
 $pp_widgets_config = [
   'version' => $pp_widgets_version,
   'camref' => get_option('pp_widgets_camref'),

@@ -1,5 +1,4 @@
 <script>
-
 <?php if (get_page_template_slug() != 'templates/page-pocketplanet.php'): ?>
 /*
  *
@@ -122,7 +121,7 @@ jQuery(document).ready(function ($) {
 });
 <?php endif; ?>
 
-<?php if (!$data['disable_intent'] && !is_front_page()): ?>
+<?php if (!$data['disable_intent'] && get_page_template_slug() != 'templates/page-pocketplanet.php'): ?>
 window.IntentMediaProperties = {  
   site_name: 'POCKET_PLANET',
   site_country: 'ID',
