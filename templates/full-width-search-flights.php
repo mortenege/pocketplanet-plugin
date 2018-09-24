@@ -22,7 +22,7 @@ if ($pp_widgets_image_url) {
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
   <div style="width:100%;">
     <h1 class="pp-widgets-text">Search Flights</h1>
-    <form id="pp_widgets_form" data-search-type="flight">
+    <form id="pp_widgets_form" data-search-type="flight" data-page-id="flight.home" data-ad-unit-id="ppl_sca_flt_hom_xu_api">
       <div class="pp-widgets-search-area">
         <div class="form-check form-check-inline">
           <label class="pp-widgets-radio" for="pp-widgets-radio-1">

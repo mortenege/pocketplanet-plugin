@@ -1,6 +1,6 @@
 <script>
 
-<?php if (is_front_page()): ?>
+<?php if (get_page_template_slug() != 'templates/page-pocketplanet.php'): ?>
 /*
  *
  * interface:

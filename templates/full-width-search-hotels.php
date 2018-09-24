@@ -22,7 +22,7 @@ if ($pp_widgets_image_url) {
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
   <div style="width:100%;">
     <h1 class="pp-widgets-text">Search Hotels</h1>
-    <form id="pp_widgets_form" data-search-type="hotel">
+    <form id="pp_widgets_form" data-search-type="hotel" data-page-id="hotel.home" data-ad-unit-id="ppl_sca_hot_hom_xu_api">
       <div class="pp-widgets-search-area">
         <div class="form-row">
           <div class="col-12 col-md-4">

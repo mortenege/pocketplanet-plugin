@@ -356,7 +356,7 @@ jQuery(document).ready(function($){
 
       if (search_type === 'car') {
         data2['ad_unit_id'] = 'ppl_sca_car_hom_xu_api';
-        data2['page_id'] = 'car,home';
+        data2['page_id'] = 'car.home';
         data2['product_category'] = 'CARS';
         data2['car_pickup_time'] = '1200';
         data2['car_dropoff_time'] = '1000';
