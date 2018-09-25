@@ -248,6 +248,11 @@ jQuery(document).ready(function($){
     });
   });
 
+  $('#pp_widgets_form').find('[type=submit]').on('click', function(e){
+    e.preventDefault();
+    $('#pp_widgets_form').submit();
+  });
+
   /**
    * Validate and Submit form
    */
@@ -277,6 +282,10 @@ jQuery(document).ready(function($){
         return;
       }
     }
+
+    // Open window as early as possible
+    var win = window.open();
+
     // set rest to standard values
     var data = $(this).serializeArray();
     data = data.reduce((obj, item) => {
@@ -289,6 +298,16 @@ jQuery(document).ready(function($){
       data['travelers'] = data['travelers'] || 2;
       data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);
       data['date2'] = data['date2'] || (new Date(date2Default)).toJSON().slice(0, 10);
+
+      // Normalize dates to not cause breaking APIs
+      let d0, d1, d2;
+      d0 = new Date();
+      d1 = new Date(data['date1']);
+      d2 = new Date(data['date2']);
+      data['date1'] = d1 < d0 ? d0.toJSON().slice(0, 10) : data['date1'];
+      d1 = new Date(data['date1']);
+      data['date2'] = d2 < d1 ? new Date(d1.getTime() + 60*60*24*7*1000) : d2;
+      data['date2'] = data['date2'].toJSON()  .slice(0, 10);
     }
     
     if (search_type === 'flight') {
@@ -384,13 +403,11 @@ jQuery(document).ready(function($){
 
       var queryString = jQuery.param(data2);
       if (window.IntentIsBlocked === false || window.IntentIsBlocked === null) {
-        console.log('NOT BLOCKED');
         var url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
       } else {
-        console.log('BLOCKED');
         var url = "https://compare.pocketplanet.com/api/sca/v1/exit_units?alt_svc=Y&" + queryString;
       }
-      var win = window.open();
+      
       $.get(url, function(response){
         if (response && 'url' in response) {
           win.location.href = response.url + "&nolimit=true&popsOver=true";

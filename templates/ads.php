@@ -66,6 +66,10 @@ function adBlockDetector(opts) {
   document.body.appendChild(adBlockedImg);
 }
 
+/**
+ * Check whether IntentMedia is Blocked by an adBlocker
+ * @return {[type]} [description]
+ */
 (function(){
   window.IntentIsBlocked = null;
   adBlockDetector({
@@ -121,7 +125,9 @@ jQuery(document).ready(function ($) {
 });
 <?php endif; ?>
 
-<?php if (!$data['disable_intent'] && get_page_template_slug() != 'templates/page-pocketplanet.php'): ?>
+<?php if (!$data['disable_intent'] && 
+  get_page_template_slug() != 'templates/page-pocketplanet.php'): // Don't set tag on Content Pages
+?>
 window.IntentMediaProperties = {  
   site_name: 'POCKET_PLANET',
   site_country: 'ID',
