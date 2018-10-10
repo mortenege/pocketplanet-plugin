@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20180925
+Version:      20181009
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class PPWidgets {
-  public const VERSION = '201809254';
+  public const VERSION = '20181009345';
 
   public const COOKIE_NAME = 'pp_widgets';
   public const COOKIE_GUID_NAME = 'pp_widgets_guid';
@@ -34,8 +34,7 @@ class PPWidgets {
     add_action( 'init', [self::class, 'setCookie'] );
     // Load Smarterads script
     add_action( 'wp_head', [self::class, 'addSmarteradsScript'] );
-    // Load Init Ad scripts
-    add_action( 'wp_footer', [self::class, 'loadAds'] );
+
     // Enqueue plugin scripts and styles
     add_action( 'wp_enqueue_scripts', [self::class, 'enqueueScripts'] );
 
@@ -45,11 +44,12 @@ class PPWidgets {
 
     // Shortcodes
     add_shortcode( 'pp_widgets', [self::class, 'basicShortcode'] );
-    add_shortcode( 'pp_widgets_ads', [self::class, 'adsScriptShortcode'] );
     add_shortcode( 'pp_widgets_rail', [self::class, 'adsRailShortcode'] );
     add_shortcode( 'pp_widgets_bottom', [self::class, 'adsBottomShortcode'] );
 
     // ajax calls
+    add_action('wp_ajax_pp_widgets_widget_countries', [self::class, 'saveWidgetCountries']);
+
     add_action('wp_ajax_pp_widgets_force_intent_on', [self::class, 'setForceIntentCookieOn']);
     add_action('wp_ajax_nopriv_pp_widgets_force_intent_on', [self::class, 'setForceIntentCookieOn']);
     add_action('wp_ajax_pp_widgets_force_intent_off', [self::class, 'setForceIntentCookieOff']);
@@ -123,6 +123,22 @@ class PPWidgets {
       self::$config['widget_prob'] = mt_rand(0, 100000) / 100000;
     }
     return self::$config['widget_prob'];
+  }
+
+  /**
+   * AJAX call to update Widget Countries
+   * @return [type] [description]
+   */
+  public static function saveWidgetCountries () {
+    $widgets = $_POST['widgets'];
+    if (!isset($widgets)) wp_send_json_error('Missing property', 400);
+    
+    $widgets = stripslashes($widgets);
+    $widgets = json_decode($widgets);
+    
+    update_option('pp_widgets_widget_countries', $widgets);
+    
+    wp_send_json($widgets);
   }
 
   /**
@@ -227,23 +243,6 @@ class PPWidgets {
   }
 
   /**
-   * Get IP address of user
-   * other APIs:
-   * https://stackoverflow.com/questions/391979/how-to-get-clients-ip-address-using-javascript
-   * @return string ip address
-   */
-  public static function getIpAddress() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-      $ip=$_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-      $ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
-    } else {
-      $ip=$_SERVER['REMOTE_ADDR'];
-    }
-    return $ip;
-  }
-
-  /**
    * Enqueue necessary plugin scripts
    * @return [type] [description]
    */
@@ -276,15 +275,26 @@ class PPWidgets {
     // Create Localized data
     $cookie_val = self::getCookieValue();
     $force_intent = self::$config['force_intent'];
+    $widgetCountries = get_option('pp_widgets_widget_countries', []);
+    $is_template_page = get_page_template_slug() == 'templates/page-pocketplanet.php';
+    $city = get_post_meta(get_the_ID(), 'pp_widgets_post_city', true);
+    $country = get_post_meta(get_the_ID(), 'pp_widgets_post_country', true);
+    
     $lData = array(
       'url' => site_url(),
-      'ip_address' => self::getIpAddress(),
       'camref' => self::$config['camref'],
       'source_code' => self::$config['source_code'],
-      'widget1' => ($force_intent || $cookie_val <= get_option('pp_widgets_prob_widget1', 0.5) ? 1 : 2),
-      'intent_params' => self::$config['intent_params']
+      'force_intent' => $force_intet,
+      'disable_intent' => !$force_intent && get_option('pp_widgets_disable_intent', false),
+      'disable_smartertravel' => get_option('pp_widgets_disable_smartertravel', false),
+      'user_cookie_value' => $cookie_val,
+      'intent_params' => self::$config['intent_params'],
+      'widget_countries' => $widgetCountries,
+      'is_template_page' => $is_template_page,
+      'country' => $country,
+      'city' => $city
     );
-    
+
     wp_localize_script('pp_widgets', 'localized_data', $lData);
     wp_enqueue_script('pp_widgets');
   }
@@ -346,57 +356,13 @@ class PPWidgets {
   }
 
   /**
-   * Setting HTML: widget1 probability threshold
-   */
-  public static function probWidget1HtmlCallback () {
-    $value = get_option('pp_widgets_prob_widget1', 0.5);
-    ?>
-    <input type="number" name="pp_widgets_prob_widget1" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
-    <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
-    <?php 
-  }
-
-  /**
-   * Setting HTML: widget2 probability threshold
-   */
-  public static function probWidget2HtmlCallback () {
-    $value = get_option('pp_widgets_prob_widget2', 0.5);
-    ?>
-    <input type="number" name="pp_widgets_prob_widget2" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
-    <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
-    <?php 
-  }
-
-  /**
-   * Setting HTML: widget3 probability threshold
-   */
-  public static function probWidget3HtmlCallback () {
-    $value = get_option('pp_widgets_prob_widget3', 0.5);
-    ?>
-    <input type="number" name="pp_widgets_prob_widget3" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
-    <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
-    <?php 
-  }
-
-  /**
-   * Setting HTML: widget4 probability threshold
-   */
-  public static function probWidget4HtmlCallback () {
-    $value = get_option('pp_widgets_prob_widget4', 0.5);
-    ?>
-    <input type="number" name="pp_widgets_prob_widget4" placeholder="" value="<?= $value; ?>" min="0" max="1" step="0.01"/>
-    <small>Value between 0 and 1. Lower for SmarterAds, higher for Intent</small>
-    <?php 
-  }
-
-  /**
    * Setting HTML: disable intent checkbox
    */
   public static function disableIntentHtmlCallback () {
     $value = get_option('pp_widgets_disable_intent', false);
     ?>
     <input type="checkbox" name="pp_widgets_disable_intent" value="1" <?php checked($value); ?> />
-    <small>Remember to set corresponding values above if enabled</small>
+    <small>This will override any specific country setting</small>
     <?php 
   }
 
@@ -407,7 +373,7 @@ class PPWidgets {
     $value = get_option('pp_widgets_disable_smartertravel', false);
     ?>
     <input type="checkbox" name="pp_widgets_disable_smartertravel" value="1" <?php checked($value); ?> />
-    <small>Remember to set corresponding values above if enabled</small>
+    <small>This will override any specific country setting</small>
     <?php 
   }
 
@@ -452,46 +418,6 @@ class PPWidgets {
       'pp_widgets_section_1'
     );
 
-    // add probability for widget 1 setting
-    register_setting( 'pp_widgets', 'pp_widgets_prob_widget1' );
-    add_settings_field(
-      'pp_widgets_prob_widget1',
-      'Ad Share for Search Widget',
-      [self::class, 'probWidget1HtmlCallback'],
-      'pp_widgets',
-      'pp_widgets_section_1'
-    );
-
-    // add probability for widget 1 setting
-    register_setting( 'pp_widgets', 'pp_widgets_prob_widget2' );
-    add_settings_field(
-      'pp_widgets_prob_widget2',
-      'Ad share for Rail Widget',
-      [self::class, 'probWidget2HtmlCallback'],
-      'pp_widgets',
-      'pp_widgets_section_1'
-    );
-
-    // add probability for widget 1 setting
-    register_setting( 'pp_widgets', 'pp_widgets_prob_widget3' );
-    add_settings_field(
-      'pp_widgets_prob_widget3',
-      'Ad share for Bottom Widget',
-      [self::class, 'probWidget3HtmlCallback'],
-      'pp_widgets',
-      'pp_widgets_section_1'
-    );
-
-    // add probability for widget 4 setting
-    register_setting( 'pp_widgets', 'pp_widgets_prob_widget4' );
-    add_settings_field(
-      'pp_widgets_prob_widget4',
-      'Ad share for Overlay Ads',
-      [self::class, 'probWidget4HtmlCallback'],
-      'pp_widgets',
-      'pp_widgets_section_1'
-    );
-
     register_setting( 'pp_widgets', 'pp_widgets_disable_intent' );
     add_settings_field(
       'pp_widgets_disable_intent',
@@ -526,7 +452,10 @@ class PPWidgets {
       ?>
       </form>
     </div>
+
     <?php
+    $filename = '/templates/country-control.php';
+    include dirname(__FILE__) . $filename;
   }
 
   /**
@@ -564,70 +493,11 @@ class PPWidgets {
   }
 
   /**
-   * Ads Script shortcode
-   */
-  public static function adsScriptShortcode($atts = [], $content = '', $tag = ''){
-    // This is only affected if shortcode parameters are presetn (almost never)
-    $atts = array_change_key_case((array)$atts, CASE_LOWER);
-    $parsed_atts = shortcode_atts([
-      'type' => 'hotel',
-      'destination' => get_the_title(),
-      'origin' => 'Bangkok, Thailand',
-      'date1' => date('Y-m-d'),
-      'date2' => date('Y-m-d', strtotime("+3 days"))
-    ], $atts, $tag);
-
-    // Set type - Not used for search widget
-    $type = $parsed_atts['type'];
-    $type = in_array($type, ['hotel', 'air', 'car', 'vacation', 'cruise']) ? $type : 'hotel';
-    $data['type'] = $type;
-    // Set dates - Not used for search widget
-    $data['date1'] = $parsed_atts['date1'];
-    $data['date2'] = $parsed_atts['date2'];
-    // Set origin and destination - Not used for search widget
-    $data['origin'] = $parsed_atts['origin'];
-    $data['destination'] = $parsed_atts['destination'];
-    $data['city'] = get_post_meta(get_the_ID(), 'pp_widgets_post_city', true);
-    $data['city'] = $data['city'] ? $data['city'] : $data['destination'];
-    $data['country'] = get_post_meta(get_the_ID(), 'pp_widgets_post_country', true);
-    // Set whether to enable/disable IntentMedia/Smartertravel
-    $data['force_intent'] = self::$config['force_intent'];
-    $data['disable_intent'] = !$data['force_intent'] && get_option('pp_widgets_disable_intent', false);
-    $data['disable_smartertravel'] = get_option('pp_widgets_disable_smartertravel', false);
-
-    // load appropriate overlays
-    $val = self::getCookieValue();
-    $is_template_page = get_page_template_slug() == 'templates/page-pocketplanet.php';
-
-    if ($is_template_page) {
-      $show_intent_overlays = false;
-      $show_smarter_overlays = true;
-    } elseif ($data['force_intent'] || $val <= get_option('pp_widgets_prob_widget4', 0.5)) {
-      $show_intent_overlays = true;
-      $show_smarter_overlays = false;
-    } else {
-      $show_intent_overlays = false;
-      $show_smarter_overlays = true;
-    }
-
-    $filename = '/templates/ads.php';
-    ob_start();
-    include dirname(__FILE__) . $filename;
-    return ob_get_clean();   
-  }
-
-  /**
    * Shortcode for Ad Rail vertical
    * @return String HTML
    */
   public static function adsRailShortcode () {
-    $force_intent = self::$config['force_intent'];
-    $val = self::getCookieValue();
-    if ($force_intent || $val <= get_option('pp_widgets_prob_widget2', 0.5)) {
-      return '<div id="IntentMediaRail"></div>';  
-    } else {
-      return '<div id="smartertravel_inline_r"></div>';
-    }
+    return '<div id="pp-widgets-ad-rail"></div>';
   }
 
   /**
@@ -635,13 +505,7 @@ class PPWidgets {
    * @return String HTML
    */
   public static function adsBottomShortcode () {
-    $force_intent = self::$config['force_intent'];
-    $val = self::getCookieValue();
-    if ($force_intent || $val <= get_option('pp_widgets_prob_widget3', 0.5)) {
-      return '<div id="IntentMediaIntercard"></div>';  
-    } else {
-      return '<div id="smartertravel_inline_b"></div>';
-    }
+    return '<div id="pp-widgets-ad-bottom"></div>';
   }
 
   /**
@@ -671,13 +535,6 @@ class PPWidgets {
         '/'
       ); 
     }
-  }
-  
-  /**
-   * loads Ads scripts in the footer
-   */
-  public static function loadAds () {
-    echo do_shortcode('[pp_widgets_ads]');
   }
 
   /**
