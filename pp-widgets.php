@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class PPWidgets {
-  public const VERSION = '201810101';
+  public const VERSION = '2018101012';
 
   public const COOKIE_NAME = 'pp_widgets';
   public const COOKIE_GUID_NAME = 'pp_widgets_guid';
@@ -497,7 +497,6 @@ class PPWidgets {
    * @return String HTML
    */
   public static function adsRailShortcode () {
-    return '<div id="smartertravel_inline_r"></div>';
     return '<div id="pp-widgets-ad-rail"></div>';
   }
 
@@ -506,7 +505,6 @@ class PPWidgets {
    * @return String HTML
    */
   public static function adsBottomShortcode () {
-    return '<div id="smartertravel_inline_b"></div>';
     return '<div id="pp-widgets-ad-bottom"></div>';
   }
 

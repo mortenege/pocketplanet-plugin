@@ -26,8 +26,8 @@ function buildAPIUrl (camref, source_code, type, queryString) {
   return "https://prf.hn/click/camref:"+camref+"/adref:" + type + "_deeplink/destination:http://www.bookingbuddy.com/en/partner/hero/?mode=" + mode + "&source=" + source_code + "&" + queryString;
 }
 
-var date1Default = new Date((new Date()).getTime() + 60*60*24*30*1000)
-var date2Default = (date1Default).getTime() + 60*60*24*7*1000; // + 7 days
+var date1Default = new Date((new Date()).getTime() + 60*60*24*30*1000);
+var date2Default = new Date((date1Default).getTime() + 60*60*24*7*1000); // + 7 days
 
 // Check whether an input is a function
 function isFn(uhhFn) { return typeof uhhFn === 'function'; }
