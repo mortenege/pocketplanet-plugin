@@ -4,6 +4,15 @@ Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 */
 
+var queryParam = window.location.search;
+queryParam = queryParam.indexOf('?') === 0 ? queryParam.slice(1) : queryParam;
+var urlParams = new URLSearchParams(queryParam);
+var MODE_DEBUG = urlParams.get('debug');
+MODE_DEBUG = MODE_DEBUG === 'true' ? true : false;
+if (MODE_DEBUG) {
+  console.log('Debug mode: ON');
+}
+
 /**
  * Build an API url from all segments
  * @param  {[type]} camref      [description]
@@ -19,14 +28,6 @@ function buildAPIUrl (camref, source_code, type, queryString) {
 
 var date1Default = new Date((new Date()).getTime() + 60*60*24*30*1000)
 var date2Default = (date1Default).getTime() + 60*60*24*7*1000; // + 7 days
-
-// init flatpickr
-$('#pp-widgets-date1').flatpickr({
-  defaultDate: date1Default,
-});
-$('#pp-widgets-date2').flatpickr({
-  defaultDate: date2Default,
-});
 
 // Check whether an input is a function
 function isFn(uhhFn) { return typeof uhhFn === 'function'; }
@@ -105,9 +106,15 @@ function adBlockDetector(opts) {
   adBlockDetector({
     onIsBlocked: function(){
       window.IntentIsBlocked = true;
+      if (MODE_DEBUG) {
+        console.log('Intent is BLOCKED');
+      }
     },
     onNotBlocked: function(){
       window.IntentIsBlocked = false;
+      if (MODE_DEBUG) {
+        console.log('Intent is NOT BLOCKED');
+      }
     }
   })
 }());
@@ -147,8 +154,40 @@ function formatDate(date) {
     return [year, month, day].join('-');
 }
 
+function shouldShowSmarter (placement) {
+  if (['w1', 'w2', 'w3', 'w4'].indexOf(placement) < 0) return false;
+  if (!window.country_name) return false;
+  let country = window.country_name.toLowerCase();
+  let widgets;
+  let user_value = localized_data.user_cookie_value;
+  // find country in list
+  for (let code in localized_data.widget_countries) {
+    let o = localized_data.widget_countries[code]
+    if (o.name.toLowerCase() !== country) continue;
+    
+    // convert to numbers
+    widgets = {
+      w1: +o.w1,
+      w2: +o.w2,
+      w3: +o.w3,
+      w4: +o.w4
+    }
+    break;
+  }
+  
+  // console.log('Widget Countries', placement, country, user_value, widgets)
+  if (!widgets) return false;
+  return user_value < widgets[placement];
+}
 
+jQuery(document).ready(function($){
+
+/* START LOAD ADS FUNCTION */
 function loadAds (params) {
+  if (MODE_DEBUG) {
+    console.log('loadAds params', params);
+  }
+
   let show_smarter_overlays = params.show_smarter_overlays === undefined ? false : params.show_smarter_overlays;
   let show_intent_overlays = params.show_intent_overlays === undefined ? false : params.show_intent_overlays;
   let force_intent = params.force_intent || false;
@@ -162,6 +201,12 @@ function loadAds (params) {
   $('#pp-widgets-ad-rail').attr('id', w2_id);
   $('#pp-widgets-ad-bottom').attr('id', w3_id);
 
+  if (MODE_DEBUG) {
+    console.log('Ad widget Rail', w2_id);
+    console.log('Ad widget Bottom', w3_id);
+    console.log('Overlays', show_smarter_overlays ? 'SmarterTravel': '', show_intent_overlays ? 'IntentMedia' : '');
+  }
+
   // Create Dates
   let date1 = formatDate(date1Default.toString());
   let date2 = formatDate(date2Default.toString());
@@ -174,6 +219,9 @@ function loadAds (params) {
 
   // Load SmarterTravel Ads
   if (!force_intent && !disable_smartertravel) {
+    if (MODE_DEBUG) {
+      console.log('Loading SmarterTravel');
+    }
     // which SmarterTravel placements to load
     let loadPlacements = ['inlineB','inlineM','inlineR','leaveBehind','widgetNoCheckboxes'];
     if (show_smarter_overlays) {
@@ -212,6 +260,9 @@ function loadAds (params) {
 
   // Load Intent Media Ads
   if (!is_template_page && (force_intent || !disable_intent)) {
+    if (MODE_DEBUG) {
+      console.log('Loading Intent');
+    }
 
     window.IntentMediaProperties = {  
       site_name: 'POCKET_PLANET',
@@ -244,89 +295,9 @@ function loadAds (params) {
     }());
   }
 }
+/* END LOAD ADS FUNCTION */
 
-function shouldShowSmarter (placement) {
-  if (['w1', 'w2', 'w3', 'w4'].indexOf(placement) < 0) return false;
-  if (!window.country_name) return false;
-  let country = window.country_name.toLowerCase();
-  let widgets;
-  let user_value = localized_data.user_cookie_value;
-  // find country in list
-  for (let code in localized_data.widget_countries) {
-    let o = localized_data.widget_countries[code]
-    if (o.name.toLowerCase() !== country) continue;
-    
-    // convert to numbers
-    widgets = {
-      w1: +o.w1,
-      w2: +o.w2,
-      w3: +o.w3,
-      w4: +o.w4
-    }
-    break;
-  }
-  
-  // console.log('Widget Countries', placement, country, user_value, widgets)
-  if (!widgets) return false;
-  return user_value < widgets[placement];
-}
-
-jQuery(document).ready(function($){
-  // load params
-  let show_smarter_overlays = shouldShowSmarter('w4');
-  let show_intent_overlays = !show_smarter_overlays;
-
-  // Init Search Widget
-  const searchWidget = new PPWidgetSearch('#pp-widgets-origin', '#pp-widgets-destination');
-
-  // Load user location
-  $.get('https://travelpayouts.com/whereami?locale=en', function(response, status){
-    // Set global variables
-    window.userLocation = response
-    window.country_name = response.country_name;
-
-    // Fill Origin Input box
-    searchWidget.fillOriginInput(response.name, response.country_name, response.iata);
-
-    // Load adds now that we know the country
-    loadAds({
-      camref: localized_data.camref,
-      source_code: localized_data.source_code,
-      show_smarter_overlays: show_smarter_overlays,
-      show_intent_overlays: show_intent_overlays,
-      disable_intent: localized_data.disable_intent,
-      disable_smartertravel: localized_data.disable_smartertravel,
-      force_intent: localized_data.force_intent,
-      origin_city: response.name,
-      origin_country: response.country_name,
-      origin_iata: response.iata,
-      destination_city: localized_data.city,
-      destination_country: localized_data.country,
-      w2: shouldShowSmarter('w2'),
-      w3: shouldShowSmarter('w3'),
-      is_template_page: localized_data.is_template_page,
-    });
-  });
-
-  // handle Submit click
-  $('#pp_widgets_form').find('[type=submit]').on('click', function(e){
-    e.preventDefault();
-    $('#pp_widgets_form').submit();
-  });
-
-  // Submit form
-  $('#pp_widgets_form').on('submit', function(event){
-    event.preventDefault();
-    
-    searchWidget.submit($(this).serializeArray(), {
-      search_type: $(this).attr('data-search-type'),
-      camref: localized_data.camref,
-      source_code: localized_data.source_code
-    });
-
-  });
-});
-
+/* START CLASS */
 class PPWidgetSearch {
   constructor (originInput, destinationInput) {
     this.$originInput = $(originInput);
@@ -678,7 +649,11 @@ class PPWidgetSearch {
 
       $.get(url, function(response){
         if (response && 'url' in response) {
-          win.location.href = response.url + "&nolimit=true&popsOver=true";
+          let url = response.url + "&nolimit=true&popsOver=true";
+          win.location.href = url
+          if (MODE_DEBUG) {
+            console.log('IntentAds XU url', url);
+          }
         } else {
           win.close();
         }
@@ -689,5 +664,78 @@ class PPWidgetSearch {
     let queryString = jQuery.param(data);
     let url = buildAPIUrl(camref, source_code, search_type, queryString);
     win.location.href = url;
+    if (MODE_DEBUG) {
+      console.log('SmarterAds XU url', url);
+    }
   }
 }
+/* END CLASS */
+
+  // init flatpickr
+  $('#pp-widgets-date1').flatpickr({
+    defaultDate: date1Default,
+  });
+  $('#pp-widgets-date2').flatpickr({
+    defaultDate: date2Default,
+  });
+
+  // Init Search Widget
+  const searchWidget = new PPWidgetSearch('#pp-widgets-origin', '#pp-widgets-destination');
+
+  // Load user location
+  $.get('https://travelpayouts.com/whereami?locale=en', function(response, status){
+    if (MODE_DEBUG) {
+      console.log('IP Geolocation', response);
+    }
+    // Set global variables
+    window.userLocation = response
+    window.country_name = response.country_name;
+
+    // Fill Origin Input box
+    searchWidget.fillOriginInput(response.name, response.country_name, response.iata);
+
+    // load params
+    let w4 = shouldShowSmarter('w4');
+    let show_smarter_overlays = w4 || localized_data.is_template_page;
+    let show_intent_overlays = !show_smarter_overlays;
+
+    // Load adds now that we know the country
+    loadAds({
+      user_value: localized_data.user_cookie_value,
+      camref: localized_data.camref,
+      source_code: localized_data.source_code,
+      show_smarter_overlays: show_smarter_overlays,
+      show_intent_overlays: show_intent_overlays,
+      disable_intent: localized_data.disable_intent,
+      disable_smartertravel: localized_data.disable_smartertravel,
+      force_intent: localized_data.force_intent,
+      origin_city: response.name,
+      origin_country: response.country_name,
+      origin_iata: response.iata,
+      destination_city: localized_data.city,
+      destination_country: localized_data.country,
+      w2: shouldShowSmarter('w2'),
+      w3: shouldShowSmarter('w3'),
+      w4: w4,
+      is_template_page: localized_data.is_template_page,
+    });
+  });
+
+  // handle Submit click
+  $('#pp_widgets_form').find('[type=submit]').on('click', function(e){
+    e.preventDefault();
+    $('#pp_widgets_form').submit();
+  });
+
+  // Submit form
+  $('#pp_widgets_form').on('submit', function(event){
+    event.preventDefault();
+    
+    searchWidget.submit($(this).serializeArray(), {
+      search_type: $(this).attr('data-search-type'),
+      camref: localized_data.camref,
+      source_code: localized_data.source_code
+    });
+
+  });
+});
