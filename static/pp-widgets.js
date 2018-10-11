@@ -515,11 +515,13 @@ class PPWidgetSearch {
     }
 
     // Validate destination input
-    this.$destinationInput.removeClass('is-invalid');
-    if (!this.$destinationInput.val()){
-      this.$destinationInput.addClass('is-invalid');
-      alert('Please enter a destination');
-      return;
+    if (search_type !== 'cruise') {
+      this.$destinationInput.removeClass('is-invalid');
+      if (!this.$destinationInput.val()){
+        this.$destinationInput.addClass('is-invalid');
+        alert('Please enter a destination');
+        return;
+      }
     }
 
     // Open window as early as possible
@@ -582,7 +584,7 @@ class PPWidgetSearch {
         data2['ad_unit_id'] = 'ppl_sca_flt_hom_xu_api';
         data2['page_id'] = 'flight.home';
         data2['product_category'] = 'FLIGHTS';
-        data2['trip_type'] = data['oneway'] ? 'oneway' : 'roundtrip';
+        data2['trip_type'] = data['oneway'] === 'true' ? 'oneway' : 'roundtrip';
         data2['flight_origin'] = this.$originInput.attr('data-code') || 
           ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
         data2['flight_destination'] = this.$destinationInput.attr('data-code') || 
@@ -597,9 +599,9 @@ class PPWidgetSearch {
         let destination_arr = data['destination'].split(',')[0];
         let destination_city = destination_arr[0];
         let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
-        data2['hotel_city_name'] = $destination.attr('data-city-name') || 
+        data2['hotel_city_name'] = this.$destinationInput.attr('data-city-name') || 
           ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
-        data2['hotel_country_code'] = $destination.attr('data-country-code') || 
+        data2['hotel_country_code'] = this.$destinationInput.attr('data-country-code') || 
           ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
         data2['hotel_state_code'] = '';
         if (data2['hotel_country_code'] == 'US') {
