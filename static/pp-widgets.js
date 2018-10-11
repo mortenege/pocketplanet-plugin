@@ -13,6 +13,17 @@ if (MODE_DEBUG) {
   console.log('Debug mode: ON');
 }
 
+function setOneway(oneway) {
+  let el = document.getElementById('pp-widgets-date2');
+  if (!el) return;
+  el.disabled = oneway;
+  
+  el.classList.remove('disabled');
+  if (el.disabled) {
+    el.classList.add('disabled');
+  }
+}
+
 /**
  * Build an API url from all segments
  * @param  {[type]} camref      [description]

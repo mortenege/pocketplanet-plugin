@@ -49,6 +49,10 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
   height: 34px;
 }
 
+#pp-widgets-full-width-search input[disabled] {
+  background-color: lightgray; 
+}
+
 #pp-widgets-full-width-search .pp-widgets-text,
 #pp-widgets-full-width-search label {
   color: white;

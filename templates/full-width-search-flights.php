@@ -26,14 +26,14 @@ if ($pp_widgets_image_url) {
       <div class="pp-widgets-search-area">
         <div class="form-check form-check-inline">
           <label class="pp-widgets-radio" for="pp-widgets-radio-1">
-            <input type="radio" name="oneway" id="pp-widgets-radio-1" value="false" checked>
+            <input type="radio" name="oneway" id="pp-widgets-radio-1" value="false" checked onclick="setOneway(false)">
             <span></span>
             <p>Return</p>
           </label>
         </div>
         <div class="form-check form-check-inline">
           <label class="pp-widgets-radio" for="pp-widgets-radio-2">
-            <input type="radio" name="oneway" id="pp-widgets-radio-2" value="true">
+            <input type="radio" name="oneway" id="pp-widgets-radio-2" value="true" onclick="setOneway(true)">
             <span></span>
             <p>One way</p>
           </label>
@@ -61,7 +61,7 @@ if ($pp_widgets_image_url) {
           </div>
           <div class="pp-widgets-col pp-widgets-col-md">
             <div class="form-group">
-              <label for="pp-widgets-date2">Arriving</label>
+              <label for="pp-widgets-date2">Returning</label>
               <input type="text" name="date2" id="pp-widgets-date2" class="form-control" placeholder="yyyy-mm-dd" />
             </div>
           </div>
