@@ -20,6 +20,7 @@ function setOneway(oneway) {
   
   el.classList.remove('disabled');
   if (el.disabled) {
+    el.value = '';
     el.classList.add('disabled');
   }
 }
