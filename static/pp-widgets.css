@@ -12,9 +12,60 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
   padding: 10px;
   width: 100%;
   min-height: 400px;
+  /*
   display: flex;
   align-items: center;
   justify-content: center
+  */
+}
+
+#pp-widgets-full-width-search--switcher {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+#pp-widgets-full-width-search--switcher .switch-tab-button {
+  display: block;
+  flex-grow: 1;
+  height: 80px;
+  padding-top: 10px;
+  cursor: pointer;
+  text-align: center;
+  background-color: rgba(51, 51, 51, 1);
+  color: white;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+#pp-widgets-full-width-search--switcher .switch-tab-button.selected {
+  background-color: rgb(236, 102, 30);
+}
+
+#pp-widgets-full-width-search--switcher .switch-tab-button + .switch-tab-button {
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+#pp-widgets-full-width-search--switcher .switch-tab-button:not(.selected):hover {
+  background-color: rgba(51, 51, 51, 0.9);
+}
+
+#pp-widgets-full-width-search--switcher .switch-tab-button span {
+  display: block;
+}
+
+#pp-widgets-full-width-search .full-width-tab {
+  display: none;
+}
+
+@media only screen and (min-width: 450px) {
+  #pp-widgets-full-width-search--switcher {
+    display: block;
+  }
+
+  #pp-widgets-full-width-search--switcher .switch-tab-button {
+    float:left;
+    width: 100px;
+  }
 }
 
 #pp-widgets-full-width-search .form-group {

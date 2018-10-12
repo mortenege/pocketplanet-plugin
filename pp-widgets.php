@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class PPWidgets {
-  public const VERSION = '201810109';
+  public const VERSION = '20181010922';
 
   public const COOKIE_NAME = 'pp_widgets';
   public const COOKIE_GUID_NAME = 'pp_widgets_guid';
@@ -483,10 +483,11 @@ class PPWidgets {
       'type' => 'flights',
     ], $atts, $tag);
 
-    $type = $parsed_atts['type'];
-    $type = in_array($type, ['flights', 'hotels', 'cars', 'cruises']) ? $type : null;
-    if (!$type) return '';
-    $filename = '/templates/full-width-search-' . $type . '.php';
+    //$type = $parsed_atts['type'];
+    //$type = in_array($type, ['flights', 'hotels', 'cars', 'cruises']) ? $type : null;
+    //if (!$type) return '';
+    //$filename = '/templates/full-width-search-' . $type . '.php';
+    $filename = '/templates/full-width-search-all.php';
     ob_start();
     require_once(dirname(__FILE__) . $filename);
     return ob_get_clean();   
