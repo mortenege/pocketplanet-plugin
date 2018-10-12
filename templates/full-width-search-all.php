@@ -39,9 +39,9 @@ if ($pp_widgets_image_url) {
     <div style="clear:left;"></div>
   </div>
 
-  <div style="display:block;" class="full-width-tab" data-tab="flights">
+  <div class="full-width-tab" data-tab="flights" style="display:block;" >
     <h1 class="pp-widgets-text">Search Flights</h1>
-    <form id="pp_widgets_form" data-search-type="flight" data-page-id="flight.home" data-ad-unit-id="ppl_sca_flt_hom_xu_api">
+    <form class="pp_widgets_form" data-search-type="flight" data-page-id="flight.home" data-ad-unit-id="ppl_sca_flt_hom_xu_api">
       <div class="pp-widgets-search-area">
         <div class="form-check form-check-inline">
           <label class="pp-widgets-radio" for="pp-widgets-radio-1">
@@ -61,27 +61,27 @@ if ($pp_widgets_image_url) {
           <div class="pp-widgets-col pp-widgets-col-lg">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-origin">Origin</label>
-              <input type="text" name="origin" id="pp-widgets-origin" class="form-control" placeholder="City or Airport Code" autocomplete="off" />
+              <input type="text" name="origin" id="pp-widgets-origin" class="form-control pp-widgets-origin" placeholder="City or Airport Code" autocomplete="off" />
               <div class="pp-widgets-suggestions" id="pp-widgets-origin-suggestions"></div>
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-lg">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Destination</label>
-              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or Airport code" autocomplete="off" />
+              <input type="text" name="destination" id="pp-widgets-destination" class="form-control pp-widgets-destination" placeholder="City or Airport code" autocomplete="off" />
               <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-md">
             <div class="form-group">
               <label for="pp-widgets-date1">Departing</label>
-              <input type="text" name="date1" id="pp-widgets-date1" class="form-control" placeholder="yyyy-mm-dd" />
+              <input type="text" name="date1" id="pp-widgets-date1" class="form-control pp-widgets-date1" placeholder="yyyy-mm-dd" />
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-md">
             <div class="form-group">
               <label for="pp-widgets-date2">Returning</label>
-              <input type="text" name="date2" id="pp-widgets-date2" class="form-control" placeholder="yyyy-mm-dd" />
+              <input type="text" name="date2" id="pp-widgets-date2" class="form-control pp-widgets-date2" placeholder="yyyy-mm-dd" />
             </div>
           </div>
           <div class="pp-widgets-col pp-widgets-col-sm">
@@ -118,32 +118,31 @@ if ($pp_widgets_image_url) {
         <div>&nbsp;</div>
       </div>
       <input type="hidden" name="nonstop" value="true" />
-      <!--<input type="hidden" name="action" value="pp_widgets_form" />-->
     </form>
   </div>
 
   <div class="full-width-tab" data-tab="hotels">
     <h1 class="pp-widgets-text">Search Hotels</h1>
-    <form id="pp_widgets_form" data-search-type="hotel" data-page-id="hotel.home" data-ad-unit-id="ppl_sca_hot_hom_xu_api">
+    <form class="pp_widgets_form" data-search-type="hotel" data-page-id="hotel.home" data-ad-unit-id="ppl_sca_hot_hom_xu_api">
       <div class="pp-widgets-search-area">
         <div class="form-row">
           <div class="col-12 col-md-4">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Destination</label>
-              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or country destination" autocomplete="off" data-search-types="city"/>
+              <input type="text" name="destination" id="pp-widgets-destination" class="form-control pp-widgets-destination" placeholder="City or country destination" autocomplete="off" data-search-types="city"/>
               <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>
           <div class="col-6 col-sm-3 col-md-2">
             <div class="form-group">
               <label for="pp-widgets-date1">Check In</label>
-              <input type="text" name="date1" id="pp-widgets-date1" class="form-control" placeholder="yyyy-mm-dd" />
+              <input type="text" name="date1" id="pp-widgets-date1" class="form-control pp-widgets-date1" placeholder="yyyy-mm-dd" />
             </div>
           </div>
           <div class="col-6 col-sm-3 col-md-2">
             <div class="form-group">
               <label for="pp-widgets-date2">Check Out</label>
-              <input type="text" name="date2" id="pp-widgets-date2" class="form-control" placeholder="yyyy-mm-dd" />
+              <input type="text" name="date2" id="pp-widgets-date2" class="form-control pp-widgets-date2" placeholder="yyyy-mm-dd" />
             </div>
           </div>
           <div class="col-6 col-sm-3 col-md-1">
@@ -184,26 +183,26 @@ if ($pp_widgets_image_url) {
 
   <div class="full-width-tab" data-tab="cars">
     <h1 class="pp-widgets-text">Search Rental Cars</h1>
-    <form id="pp_widgets_form" data-search-type="car" data-page-id="car.home" data-ad-unit-id="ppl_sca_car_hom_xu_api">
+    <form class="pp_widgets_form" data-search-type="car" data-page-id="car.home" data-ad-unit-id="ppl_sca_car_hom_xu_api">
       <div class="pp-widgets-search-area">
         <div class="form-row">
           <div class="col-12 col-md-4">
             <div class="form-group" style="position: relative;">
               <label for="pp-widgets-destination">Pick Up Location</label>
-              <input type="text" name="destination" id="pp-widgets-destination" class="form-control" placeholder="City or country destination" autocomplete="off" data-search-types="city"/>
+              <input type="text" name="destination" id="pp-widgets-destination" class="form-control pp-widgets-destination" placeholder="City or country destination" autocomplete="off" data-search-types="city"/>
               <div class="pp-widgets-suggestions" id="pp-widgets-destination-suggestions"></div>
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="form-group">
               <label for="pp-widgets-date1">Pick Up Date</label>
-              <input type="text" name="date1" id="pp-widgets-date1" class="form-control" placeholder="yyyy-mm-dd" />
+              <input type="text" name="date1" id="pp-widgets-date1" class="form-control pp-widgets-date1" placeholder="yyyy-mm-dd" />
             </div>
           </div>
           <div class="col-6 col-md-3">
             <div class="form-group">
               <label for="pp-widgets-date2">Drop Off Date</label>
-              <input type="text" name="date2" id="pp-widgets-date2" class="form-control" placeholder="yyyy-mm-dd" />
+              <input type="text" name="date2" id="pp-widgets-date2" class="form-control pp-widgets-date2" placeholder="yyyy-mm-dd" />
             </div>
           </div>
           <div class="col-6 col-md-2">
@@ -221,7 +220,7 @@ if ($pp_widgets_image_url) {
 
   <div class="full-width-tab" data-tab="cruises">
     <h1 class="pp-widgets-text">Search Cruises</h1>
-    <form id="pp_widgets_form" data-search-type="cruise">
+    <form class="pp_widgets_form" data-search-type="cruise">
       <div class="pp-widgets-search-area">
         <div class="form-row">
           <div class="col-12 col-md-3">
@@ -334,22 +333,6 @@ if ($pp_widgets_image_url) {
 
 <script>
 jQuery(document).ready(function($){
-  $('.switch-tab-button').click(function(e){
-
-    $('.switch-tab-button.selected').removeClass('selected');
-    $(this).addClass('selected');
-
-    let type = $(this).data('tab');
-    let tabs = $('.full-width-tab');
-    // clear
-    tabs.each(function(index, el){
-      let tab = $(el);
-      let type = $(tab).data('tab');
-      tab.css({display: 'none'});
-    })
-
-    // show tab
-    $('.full-width-tab[data-tab="' + type + '"]').css({display: 'block'});
-  });
+  
 });
 </script>

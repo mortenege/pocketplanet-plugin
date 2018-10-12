@@ -511,16 +511,18 @@ class PPWidgetSearch {
     });
   }
 
-  submit (data, params) {
+  submit (form, data, params) {
+    let $origin = $(form).find('.pp-widgets-origin').first();
+    let $destination = $(form).find('.pp-widgets-destination').first();
     let search_type = params.search_type || 'hotel';
     let camref = params.camref;
     let source_code = params.source_code;
 
     // Validate origin input
     if (search_type === 'flight') {
-      this.$originInput.removeClass('is-invalid');
-      if (!this.$originInput.val()){
-        this.$originInput.addClass('is-invalid');
+      $origin.removeClass('is-invalid');
+      if (!$origin.val()){
+        $origin.addClass('is-invalid');
         alert('Please enter a departing city or airport');
         return;
       }
@@ -528,9 +530,9 @@ class PPWidgetSearch {
 
     // Validate destination input
     if (search_type !== 'cruise') {
-      this.$destinationInput.removeClass('is-invalid');
-      if (!this.$destinationInput.val()){
-        this.$destinationInput.addClass('is-invalid');
+      $destination.removeClass('is-invalid');
+      if (!$destination.val()){
+        $destination.addClass('is-invalid');
         alert('Please enter a destination');
         return;
       }
@@ -546,7 +548,7 @@ class PPWidgetSearch {
       }, {})
 
     if (search_type !== 'cruise') {
-      data['destination'] = this.$destinationInput.val();
+      // data['destination'] = $destination.val();
       data['travelers'] = data['travelers'] || 2;
       data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);
       data['date2'] = data['date2'] || (new Date(date2Default)).toJSON().slice(0, 10);
@@ -563,7 +565,7 @@ class PPWidgetSearch {
     }
     
     if (search_type === 'flight') {
-      data['origin'] = this.$originInput.attr('data-code') || this.$originInput.val();
+      data['origin'] = $origin.attr('data-code') || $origin.val();
       data['class'] = data['class'] || 'economy_coach';
       data['oneway'] = data['oneway'] === 'false' || data['oneway'] === 'true' ? data['oneway'] : 'false';
       data['nonstop'] = data['nonstop'] === 'false' || data['nonstop'] === 'true' ? data['nonstop'] : 'true';    
@@ -576,12 +578,12 @@ class PPWidgetSearch {
      */
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
       // Hack to get first value in suggestboxes
-      if (this.$originInput) {
-        let $origin_dropdown = this.getDropdown(this.$originInput);
+      if ($origin) {
+        let $origin_dropdown = this.getDropdown($origin);
         let $firstOrigin = $origin_dropdown.find('[data-code]').first();
         $firstOrigin = $firstOrigin.length > 0 ? $($firstOrigin) : null;
       }
-      let $destination_dropdown = this.getDropdown(this.$destinationInput);
+      let $destination_dropdown = this.getDropdown($destination);
       let $firstDestination = $destination_dropdown.find('[data-code]').first();
       $firstDestination = $firstDestination.length > 0 ? $($firstDestination) : null;
 
@@ -597,9 +599,9 @@ class PPWidgetSearch {
         data2['page_id'] = 'flight.home';
         data2['product_category'] = 'FLIGHTS';
         data2['trip_type'] = data['oneway'] === 'true' ? 'oneway' : 'roundtrip';
-        data2['flight_origin'] = this.$originInput.attr('data-code') || 
+        data2['flight_origin'] = $origin.attr('data-code') || 
           ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
-        data2['flight_destination'] = this.$destinationInput.attr('data-code') || 
+        data2['flight_destination'] = $destination.attr('data-code') || 
           ($firstDestination ? $firstDestination.attr('data-code') : $data['destination']);
       }
 
@@ -611,13 +613,13 @@ class PPWidgetSearch {
         let destination_arr = data['destination'].split(',')[0];
         let destination_city = destination_arr[0];
         let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
-        data2['hotel_city_name'] = this.$destinationInput.attr('data-city-name') || 
+        data2['hotel_city_name'] = $destination.attr('data-city-name') || 
           ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
-        data2['hotel_country_code'] = this.$destinationInput.attr('data-country-code') || 
+        data2['hotel_country_code'] = $destination.attr('data-country-code') || 
           ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
         data2['hotel_state_code'] = '';
         if (data2['hotel_country_code'] == 'US') {
-          let state_code = this.$destinationInput.attr('data-state-code') || 
+          let state_code = $destination.attr('data-state-code') || 
             ($firstDestination ? $firstDestination.attr('data-state-code') : null);
           if (state_code) {
             data2['hotel_state_code'] = state_code;
@@ -636,13 +638,13 @@ class PPWidgetSearch {
         let destination_city = destination_arr[0];
         let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
 
-        data2['car_pickup_city'] = this.$destinationInput.attr('data-city-name') || 
+        data2['car_pickup_city'] = $destination.attr('data-city-name') || 
           ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
-        data2['car_pickup_country'] = this.$destinationInput.attr('data-country-code') || 
+        data2['car_pickup_country'] = $destination.attr('data-country-code') || 
           ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
         data2['car_pickup_state'] = ''
         if (data2['car_pickup_country'] == 'US') {
-          let state_code = this.$destinationInput.attr('data-state-code') || 
+          let state_code = $destination.attr('data-state-code') || 
             ($firstDestination ? $firstDestination.attr('data-state-code') : null);
           if (state_code) {
             data2['car_pickup_state'] = state_code;
@@ -685,16 +687,35 @@ class PPWidgetSearch {
 }
 /* END CLASS */
 
+  // Tab
+  $('.switch-tab-button').click(function(e){
+
+    $('.switch-tab-button.selected').removeClass('selected');
+    $(this).addClass('selected');
+
+    let type = $(this).data('tab');
+    let tabs = $('.full-width-tab');
+    // clear
+    tabs.each(function(index, el){
+      let tab = $(el);
+      let type = $(tab).data('tab');
+      tab.css({display: 'none'});
+    })
+
+    // show tab
+    $('.full-width-tab[data-tab="' + type + '"]').css({display: 'block'});
+  });
+
   // init flatpickr
-  $('#pp-widgets-date1').flatpickr({
+  $('.pp-widgets-date1').flatpickr({
     defaultDate: date1Default,
   });
-  $('#pp-widgets-date2').flatpickr({
+  $('.pp-widgets-date2').flatpickr({
     defaultDate: date2Default,
   });
 
   // Init Search Widget
-  const searchWidget = new PPWidgetSearch('#pp-widgets-origin', '#pp-widgets-destination');
+  const searchWidget = new PPWidgetSearch('.pp-widgets-origin', '.pp-widgets-destination');
 
   // Load user location
   $.get('https://travelpayouts.com/whereami?locale=en', function(response, status){
@@ -735,17 +756,11 @@ class PPWidgetSearch {
     });
   });
 
-  // handle Submit click
-  $('#pp_widgets_form').find('[type=submit]').on('click', function(e){
-    e.preventDefault();
-    $('#pp_widgets_form').submit();
-  });
-
   // Submit form
-  $('#pp_widgets_form').on('submit', function(event){
+  $('.pp_widgets_form').on('submit', function(event){
     event.preventDefault();
     
-    searchWidget.submit($(this).serializeArray(), {
+    searchWidget.submit(this, $(this).serializeArray(), {
       search_type: $(this).attr('data-search-type'),
       camref: localized_data.camref,
       source_code: localized_data.source_code
