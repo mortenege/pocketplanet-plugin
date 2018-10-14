@@ -7,7 +7,10 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // load iamge id from database
-$pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
+$pp_widgets_background_image_id = get_post_meta(get_the_ID(), 'pp_widgets_background_image', true);
+if (!$pp_widgets_background_image_id) {
+  $pp_widgets_background_image_id = get_option('pp_widgets_background_image', 0);
+}
 // get url for image_id
 $pp_widgets_image_url = wp_get_attachment_url( $pp_widgets_background_image_id );
 if ($pp_widgets_image_url) {
@@ -19,19 +22,19 @@ if ($pp_widgets_image_url) {
 
 <div id="pp-widgets-full-width-search" <?php echo $style_attr; ?>>
   <div id="pp-widgets-full-width-search--switcher">
-    <div class="switch-tab-button selected" data-tab="flights">
+    <div class="switch-tab-button <?= $visible_type === 'flights' ? 'selected' : '' ?>" data-tab="flights">
       <img src="https://d31st11mn3cu1v.cloudfront.net/images/home/menu_icon_flight.png"/>
       <span>Flights</span>
     </div>
-    <div class="switch-tab-button" data-tab="hotels">
+    <div class="switch-tab-button <?= $visible_type === 'hotels' ? 'selected' : '' ?>" data-tab="hotels">
       <img src="https://d31st11mn3cu1v.cloudfront.net/images/home/menu_icon_hotels.png"/>
       <span>Hotels</span>
     </div>
-    <div class="switch-tab-button" data-tab="cruises" >
+    <div class="switch-tab-button <?= $visible_type === 'cruises' ? 'selected' : '' ?>" data-tab="cruises" >
       <img src="https://d31st11mn3cu1v.cloudfront.net/images/home/menu_icon_cruises.png"/>
       <span>Cruises</span>
     </div>
-    <div class="switch-tab-button" data-tab="cars">
+    <div class="switch-tab-button <?= $visible_type === 'cars' ? 'selected' : '' ?>" data-tab="cars">
       <img src="https://d31st11mn3cu1v.cloudfront.net/images/home/menu_icon_car.png"/>
       <span>Cars</span>
     </div>
@@ -39,7 +42,7 @@ if ($pp_widgets_image_url) {
     <div style="clear:left;"></div>
   </div>
 
-  <div class="full-width-tab" data-tab="flights" style="display:block;" >
+  <div class="full-width-tab" data-tab="flights" <?= $visible_type === 'flights' ? 'style="display:block;"' : '' ?>>
     <h1 class="pp-widgets-text">Search Flights</h1>
     <form class="pp_widgets_form" data-search-type="flight" data-page-id="flight.home" data-ad-unit-id="ppl_sca_flt_hom_xu_api">
       <div class="pp-widgets-search-area">
@@ -121,7 +124,7 @@ if ($pp_widgets_image_url) {
     </form>
   </div>
 
-  <div class="full-width-tab" data-tab="hotels">
+  <div class="full-width-tab" data-tab="hotels" <?= $visible_type === 'hotels' ? 'style="display:block;"' : '' ?>>
     <h1 class="pp-widgets-text">Search Hotels</h1>
     <form class="pp_widgets_form" data-search-type="hotel" data-page-id="hotel.home" data-ad-unit-id="ppl_sca_hot_hom_xu_api">
       <div class="pp-widgets-search-area">
@@ -181,7 +184,7 @@ if ($pp_widgets_image_url) {
     </form>
   </div>
 
-  <div class="full-width-tab" data-tab="cars">
+  <div class="full-width-tab" data-tab="cars" <?= $visible_type === 'cars' ? 'style="display:block;"' : '' ?>>
     <h1 class="pp-widgets-text">Search Rental Cars</h1>
     <form class="pp_widgets_form" data-search-type="car" data-page-id="car.home" data-ad-unit-id="ppl_sca_car_hom_xu_api">
       <div class="pp-widgets-search-area">
@@ -218,7 +221,7 @@ if ($pp_widgets_image_url) {
     </form>
   </div>
 
-  <div class="full-width-tab" data-tab="cruises">
+  <div class="full-width-tab" data-tab="cruises" <?= $visible_type === 'cruises' ? 'style="display:block;"' : '' ?>>
     <h1 class="pp-widgets-text">Search Cruises</h1>
     <form class="pp_widgets_form" data-search-type="cruise">
       <div class="pp-widgets-search-area">
@@ -330,9 +333,3 @@ if ($pp_widgets_image_url) {
     </form>
   </div>
 </div>
-
-<script>
-jQuery(document).ready(function($){
-  
-});
-</script>

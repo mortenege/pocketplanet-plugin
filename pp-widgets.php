@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20181010
+Version:      20181013
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class PPWidgets {
-  public const VERSION = '201810109222';
+  public const VERSION = '20181013';
 
   public const COOKIE_NAME = 'pp_widgets';
   public const COOKIE_GUID_NAME = 'pp_widgets_guid';
@@ -483,10 +483,9 @@ class PPWidgets {
       'type' => 'flights',
     ], $atts, $tag);
 
-    //$type = $parsed_atts['type'];
-    //$type = in_array($type, ['flights', 'hotels', 'cars', 'cruises']) ? $type : null;
-    //if (!$type) return '';
-    //$filename = '/templates/full-width-search-' . $type . '.php';
+    $type = $parsed_atts['type'];
+    $visible_type = in_array($type, ['flights', 'hotels', 'cars', 'cruises']) ? $type : 'flights';
+    
     $filename = '/templates/full-width-search-all.php';
     ob_start();
     require_once(dirname(__FILE__) . $filename);
