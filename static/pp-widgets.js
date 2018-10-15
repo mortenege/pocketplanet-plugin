@@ -315,7 +315,7 @@ class PPWidgetSearch {
     this.$originInput = $(originInput);
     this.$destinationInput = $(destinationInput);
 
-    // Setup destinaton searh
+    // Setup destination searh
     this.$destinationInput.keyup( debounce(this.searchApi.bind(this), 250) );
     this.$destinationInput.on('click', function(e){
       e.stopPropagation();
@@ -511,6 +511,85 @@ class PPWidgetSearch {
     });
   }
 
+  genIntentBase (travelers, date1, date2) {
+    let data = localized_data.intent_params; 
+    data['cache_buster'] = new Date().getTime();
+    data['travelers'] = travelers || 2;
+    data['travel_date_start'] = date1.replace(/-/g, '');
+    data['travel_date_end'] = date2.replace(/-/g, '');
+    data['privacy_policy_link'] = 'https://pocketplanet.com/privacy-policy/';
+    return data
+  }
+
+  genIntentFlight (oneway, origin, destination) {
+    let data = {}
+    data['ad_unit_id'] = 'ppl_sca_flt_hom_xu_api';
+    data['page_id'] = 'flight.home';
+    data['product_category'] = 'FLIGHTS';
+    data['trip_type'] = oneway === 'true' ? 'oneway' : 'roundtrip';
+    data['flight_origin'] = origin;
+    data['flight_destination'] = destination;
+    return data
+  }
+
+  genIntentHotel (rooms, city, country, state) {
+    let data = {}
+    data['ad_unit_id'] = 'ppl_sca_hot_hom_xu_api';
+    data['page_id'] = 'hotel.home';
+    data['product_category'] = 'HOTELS';
+    data['hotel_rooms'] = rooms;
+    data['hotel_city_name'] = city;
+    data['hotel_country_code'] = country;
+    data['hotel_state_code'] = '';
+    if (data['hotel_country_code'] == 'US' && state) {
+      data['hotel_state_code'] = state;
+    }
+    return data;
+  }
+
+  genIntentCar (city, country, state) {
+    let data = {}
+    data['ad_unit_id'] = 'ppl_sca_car_hom_xu_api';
+    data['page_id'] = 'car.home';
+    data['product_category'] = 'CARS';
+    data['car_pickup_time'] = '1200';
+    data['car_dropoff_time'] = '1000';
+
+    data['car_pickup_city'] = city;
+    data['car_pickup_country'] = country;
+    data['car_pickup_state'] = ''
+    if (data['car_pickup_country'] == 'US' && state) {
+      data['car_pickup_state'] = state;
+    }
+    data['car_dropoff_city'] = data['car_pickup_city'];
+    data['car_dropoff_country'] = data['car_pickup_country'];
+    data['car_dropoff_state'] = data['car_pickup_state'];
+
+    return data;
+  }
+
+  openIntentUrl (win, data) {
+    let queryString = jQuery.param(data);
+    let url;
+    if (window.IntentIsBlocked === false || window.IntentIsBlocked === null) {
+      url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
+    } else {
+      url = "https://compare.pocketplanet.com/api/sca/v1/exit_units?alt_svc=Y&" + queryString;
+    }
+
+    $.get(url, function(response){
+      if (response && 'url' in response) {
+        let url = response.url + "&nolimit=true&popsOver=true";
+        win.location.href = url
+        if (MODE_DEBUG) {
+          console.log('IntentAds XU url', url);
+        }
+      } else {
+        win.close();
+      }
+    });
+  }
+
   submit (form, data, params) {
     let $origin = $(form).find('.pp-widgets-origin').first();
     let $destination = $(form).find('.pp-widgets-destination').first();
@@ -548,7 +627,6 @@ class PPWidgetSearch {
       }, {})
 
     if (search_type !== 'cruise') {
-      // data['destination'] = $destination.val();
       data['travelers'] = data['travelers'] || 2;
       data['date1'] = data['date1'] || (new Date()).toJSON().slice(0, 10);
       data['date2'] = data['date2'] || (new Date(date2Default)).toJSON().slice(0, 10);
@@ -578,102 +656,47 @@ class PPWidgetSearch {
      */
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
       // Hack to get first value in suggestboxes
+      let $firstOrigin, $firstDestination;
       if ($origin) {
         let $origin_dropdown = this.getDropdown($origin);
-        let $firstOrigin = $origin_dropdown.find('[data-code]').first();
+        $firstOrigin = $origin_dropdown.find('[data-code]').first();
         $firstOrigin = $firstOrigin.length > 0 ? $($firstOrigin) : null;
       }
       let $destination_dropdown = this.getDropdown($destination);
-      let $firstDestination = $destination_dropdown.find('[data-code]').first();
+      $firstDestination = $destination_dropdown.find('[data-code]').first();
       $firstDestination = $firstDestination.length > 0 ? $($firstDestination) : null;
 
-      let data2 = localized_data.intent_params; 
-      data2['cache_buster'] = new Date().getTime();
-      data2['travelers'] = data['travelers'];
-      data2['travel_date_start'] = data['date1'].replace(/-/g, '');
-      data2['travel_date_end'] = data['date2'].replace(/-/g, '');
-      data2['privacy_policy_link'] = 'https://pocketplanet.com/privacy-policy/';
+      // Generate Airport code, or city
+      let origin_code = '';
+      if ($origin) {
+        origin_code = $origin.attr('data-code') || ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
+      }
+      let destination_code = $destination.attr('data-code') || ($firstDestination ? $firstDestination.attr('data-code') : $data['destination']);
+      // Generate Destination city & country
+      let destination_arr = data['destination'].split(',')
+      let destination_city = destination_arr[0];
+      let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
+      destination_city = $destination.attr('data-city-name') || ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
+      destination_country = $destination.attr('data-country-code') || ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
+      let state_code = $destination.attr('data-state-code') || ($firstDestination ? $firstDestination.attr('data-state-code') : null);
+      
+      // Generate the base for intent
+      let dataIntent = this.genIntentBase(data['travellers'], data['date1'], data['date2']);
+      let dataRedirect = Object.assign({}, dataIntent);
 
       if (search_type === 'flight') {
-        data2['ad_unit_id'] = 'ppl_sca_flt_hom_xu_api';
-        data2['page_id'] = 'flight.home';
-        data2['product_category'] = 'FLIGHTS';
-        data2['trip_type'] = data['oneway'] === 'true' ? 'oneway' : 'roundtrip';
-        data2['flight_origin'] = $origin.attr('data-code') || 
-          ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
-        data2['flight_destination'] = $destination.attr('data-code') || 
-          ($firstDestination ? $firstDestination.attr('data-code') : $data['destination']);
+        dataIntent = Object.assign(dataIntent, this.genIntentFlight(data['oneway'], origin_code, destination_code))
+        dataRedirect = Object.assign(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
+      } else if (search_type === 'hotel') {
+        dataIntent = Object.assign(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
+      } else if (search_type === 'car') {
+        dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
       }
 
-      if (search_type === 'hotel') {
-        data2['ad_unit_id'] = 'ppl_sca_hot_hom_xu_api';
-        data2['page_id'] = 'hotel.home';
-        data2['product_category'] = 'HOTELS';
-        data2['hotel_rooms'] = data['rooms'];
-        let destination_arr = data['destination'].split(',')[0];
-        let destination_city = destination_arr[0];
-        let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
-        data2['hotel_city_name'] = $destination.attr('data-city-name') || 
-          ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
-        data2['hotel_country_code'] = $destination.attr('data-country-code') || 
-          ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
-        data2['hotel_state_code'] = '';
-        if (data2['hotel_country_code'] == 'US') {
-          let state_code = $destination.attr('data-state-code') || 
-            ($firstDestination ? $firstDestination.attr('data-state-code') : null);
-          if (state_code) {
-            data2['hotel_state_code'] = state_code;
-          }
-        }
+      this.openIntentUrl(win, dataIntent);
+      if (search_type === 'flight') {
+        this.openIntentUrl(window, dataRedirect);
       }
-
-      if (search_type === 'car') {
-        data2['ad_unit_id'] = 'ppl_sca_car_hom_xu_api';
-        data2['page_id'] = 'car.home';
-        data2['product_category'] = 'CARS';
-        data2['car_pickup_time'] = '1200';
-        data2['car_dropoff_time'] = '1000';
-
-        let destination_arr = data['destination'].split(',')[0];
-        let destination_city = destination_arr[0];
-        let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
-
-        data2['car_pickup_city'] = $destination.attr('data-city-name') || 
-          ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
-        data2['car_pickup_country'] = $destination.attr('data-country-code') || 
-          ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
-        data2['car_pickup_state'] = ''
-        if (data2['car_pickup_country'] == 'US') {
-          let state_code = $destination.attr('data-state-code') || 
-            ($firstDestination ? $firstDestination.attr('data-state-code') : null);
-          if (state_code) {
-            data2['car_pickup_state'] = state_code;
-          }
-        }
-        data2['car_dropoff_city'] = data2['car_pickup_city'];
-        data2['car_dropoff_country'] = data2['car_pickup_country'];
-        data2['car_dropoff_state'] = data2['car_pickup_state'];
-      }
-
-      let queryString = jQuery.param(data2);
-      let url;
-      if (window.IntentIsBlocked === false || window.IntentIsBlocked === null) {
-        url = "https://a.intentmedia.net/api/sca/v1/exit_units?" + queryString;
-      } else {
-        url = "https://compare.pocketplanet.com/api/sca/v1/exit_units?alt_svc=Y&" + queryString;
-      }
-
-      $.get(url, function(response){
-        if (response && 'url' in response) {
-          let url = response.url + "&nolimit=true&popsOver=true";
-          win.location.href = url
-          if (MODE_DEBUG) {
-            console.log('IntentAds XU url', url);
-          }
-        } else {
-          win.close();
-        }
-      });
       return;
     }
 
