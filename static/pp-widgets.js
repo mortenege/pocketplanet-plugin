@@ -786,6 +786,12 @@ class PPWidgetSearch {
     });
   });
 
+  // This code is necessary so that SmarterTravel doesn't open a pop up first
+  $('.pp_widgets_form').find('[type=submit]').click(function(e){
+    e.preventDefault();
+    $(this).closest('.pp_widgets_form').submit();
+  });
+
   // Submit form
   $('.pp_widgets_form').on('submit', function(event){
     event.preventDefault();
