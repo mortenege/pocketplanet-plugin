@@ -596,6 +596,20 @@ class PPWidgetSearch {
     });
   }
 
+  openSmarterUrl (win, camref, source_code, search_type, data, callback) {
+    let queryString = jQuery.param(data);
+    let url = buildAPIUrl(camref, source_code, search_type, queryString);
+    win.location.href = url;
+
+    // Callback
+    if (typeof callback === 'function') {
+      callback.apply(this);
+    }
+    if (MODE_DEBUG) {
+      console.log('SmarterAds XU url', url);
+    }  
+  }
+
   submit (form, data, params) {
     let $origin = $(form).find('.pp-widgets-origin').first();
     let $destination = $(form).find('.pp-widgets-destination').first();
@@ -647,12 +661,17 @@ class PPWidgetSearch {
       data['date2'] = d2 < d1 ? new Date(d1.getTime() + 60*60*24*7*1000) : d2;
       data['date2'] = data['date2'].toJSON()  .slice(0, 10);
     }
+
+    // Copy for redirect page
+    let dataSmarterRedirect = Object.assign({}, data);
     
     if (search_type === 'flight') {
       data['origin'] = $origin.attr('data-code') || $origin.val();
       data['class'] = data['class'] || 'economy_coach';
       data['oneway'] = data['oneway'] === 'false' || data['oneway'] === 'true' ? data['oneway'] : 'false';
       data['nonstop'] = data['nonstop'] === 'false' || data['nonstop'] === 'true' ? data['nonstop'] : 'true';    
+
+      dataSmarterRedirect['rooms'] = 1;
     } else if (search_type === 'hotel') {
       data['rooms'] = data['rooms'] || 1;
     }
@@ -660,59 +679,62 @@ class PPWidgetSearch {
     /*
      * for INTENT
      */
+    
+    // Hack to get first value in suggestboxes
+    let $firstOrigin, $firstDestination;
+    if ($origin) {
+      let $origin_dropdown = this.getDropdown($origin);
+      $firstOrigin = $origin_dropdown.find('[data-code]').first();
+      $firstOrigin = $firstOrigin.length > 0 ? $($firstOrigin) : null;
+    }
+    let $destination_dropdown = this.getDropdown($destination);
+    $firstDestination = $destination_dropdown.find('[data-code]').first();
+    $firstDestination = $firstDestination.length > 0 ? $($firstDestination) : null;
+
+    // Generate Airport code, or city
+    let origin_code = '';
+    if ($origin) {
+      origin_code = $origin.attr('data-code') || ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
+    }
+    let destination_code = $destination.attr('data-code') || ($firstDestination ? $firstDestination.attr('data-code') : $data['destination']);
+    // Generate Destination city & country
+    let destination_arr = data['destination'].split(',')
+    let destination_city = destination_arr[0];
+    let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
+    destination_city = $destination.attr('data-city-name') || ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
+    destination_country = $destination.attr('data-country-code') || ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
+    let state_code = $destination.attr('data-state-code') || ($firstDestination ? $firstDestination.attr('data-state-code') : null);
+    
+    // Generate the base for intent
+    let dataIntent = this.genIntentBase(data['travellers'], data['date1'], data['date2']);
+    let dataRedirect = Object.assign({}, dataIntent);
+
+    if (search_type === 'flight') {
+      dataIntent = Object.assign(dataIntent, this.genIntentFlight(data['oneway'], origin_code, destination_code))
+      dataRedirect = Object.assign(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
+    } else if (search_type === 'hotel') {
+      dataIntent = Object.assign(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
+    } else if (search_type === 'car') {
+      dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
+    }
+
+    // Open for INTENT
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
-      // Hack to get first value in suggestboxes
-      let $firstOrigin, $firstDestination;
-      if ($origin) {
-        let $origin_dropdown = this.getDropdown($origin);
-        $firstOrigin = $origin_dropdown.find('[data-code]').first();
-        $firstOrigin = $firstOrigin.length > 0 ? $($firstOrigin) : null;
-      }
-      let $destination_dropdown = this.getDropdown($destination);
-      $firstDestination = $destination_dropdown.find('[data-code]').first();
-      $firstDestination = $firstDestination.length > 0 ? $($firstDestination) : null;
-
-      // Generate Airport code, or city
-      let origin_code = '';
-      if ($origin) {
-        origin_code = $origin.attr('data-code') || ($firstOrigin ? $firstOrigin.attr('data-code') : data['origin']);
-      }
-      let destination_code = $destination.attr('data-code') || ($firstDestination ? $firstDestination.attr('data-code') : $data['destination']);
-      // Generate Destination city & country
-      let destination_arr = data['destination'].split(',')
-      let destination_city = destination_arr[0];
-      let destination_country = destination_arr.length > 1 ? destination_arr[1] : '';
-      destination_city = $destination.attr('data-city-name') || ($firstDestination ? $firstDestination.attr('data-city-name') : destination_city);
-      destination_country = $destination.attr('data-country-code') || ($firstDestination ? $firstDestination.attr('data-country-code') : destination_country);
-      let state_code = $destination.attr('data-state-code') || ($firstDestination ? $firstDestination.attr('data-state-code') : null);
-      
-      // Generate the base for intent
-      let dataIntent = this.genIntentBase(data['travellers'], data['date1'], data['date2']);
-      let dataRedirect = Object.assign({}, dataIntent);
-
-      if (search_type === 'flight') {
-        dataIntent = Object.assign(dataIntent, this.genIntentFlight(data['oneway'], origin_code, destination_code))
-        dataRedirect = Object.assign(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
-      } else if (search_type === 'hotel') {
-        dataIntent = Object.assign(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
-      } else if (search_type === 'car') {
-        dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
-      }
-
       this.openIntentUrl(win, dataIntent, function(){
         if (search_type === 'flight' && localized_data.enable_backtabs) {
-          this.openIntentUrl(window, dataRedirect);
+          this.openSmarterUrl(window, camref, source_code, search_type, dataSmarterRedirect);
         }
       });
       return;
     }
 
-    let queryString = jQuery.param(data);
-    let url = buildAPIUrl(camref, source_code, search_type, queryString);
-    win.location.href = url;
-    if (MODE_DEBUG) {
-      console.log('SmarterAds XU url', url);
-    }
+    // OR... Open for SMARTER
+    this.openSmarterUrl(win, camref, source_code, search_type, data, function(){
+      if (search_type === 'flight' && localized_data.enable_backtabs) {
+        this.openIntentUrl(window, dataRedirect);
+      }
+    });
+    
   }
 }
 /* END CLASS */
