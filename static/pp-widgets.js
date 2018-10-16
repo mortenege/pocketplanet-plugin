@@ -724,7 +724,7 @@ class PPWidgetSearch {
       this.openIntentUrl(win, dataIntent, function(){
         if (search_type === 'flight' && localized_data.enable_backtabs) {
           if (shouldShowSmarter('w5')) {
-            this.openSmarterUrl(window, camref, source_code, search_type, dataSmarterRedirect);
+            this.openSmarterUrl(window, camref, source_code, 'hotel', dataSmarterRedirect);
           } else {
             this.openIntentUrl(window, dataRedirect);    
           }
@@ -737,7 +737,7 @@ class PPWidgetSearch {
     this.openSmarterUrl(win, camref, source_code, search_type, data, function(){
       if (search_type === 'flight' && localized_data.enable_backtabs) {
         if (shouldShowSmarter('w5')) {
-          this.openSmarterUrl(window, camref, source_code, search_type, dataSmarterRedirect);
+          this.openSmarterUrl(window, camref, source_code, 'hotel', dataSmarterRedirect);
         } else {
           this.openIntentUrl(window, dataRedirect);    
         }
