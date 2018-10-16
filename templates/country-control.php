@@ -18,6 +18,7 @@
         <th>Rail</th>
         <th>Bottom</th>
         <th>Overlay</th>
+        <th>Backtab</th>
         <th></th>
       </tr>
     </thead>
@@ -36,6 +37,9 @@
         </td>
         <td>
           <input type="number" v-model="row.w4" min="0" max="1" step="0.01" @input="rowUpdated(row)">
+        </td>
+        <td>
+          <input type="number" v-model="row.w5" min="0" max="1" step="0.01" @input="rowUpdated(row)">
         </td>
         <?php /*
         <td>
@@ -218,10 +222,11 @@ const app = new Vue({
         let w = this.$data._widgetCountries;
         for (let code in w) {
           let a = w[code];
-          a.w1 = +a.w1;
-          a.w2 = +a.w2;
-          a.w3 = +a.w3;
-          a.w4 = +a.w4;
+          a.w1 = +a.w1 || 0;
+          a.w2 = +a.w2 || 0;
+          a.w3 = +a.w3 || 0;
+          a.w4 = +a.w4 || 0;
+          a.w5 = +a.w5 || 0;
         }
 
         return w;
@@ -275,7 +280,8 @@ const app = new Vue({
         w1: 0,
         w2: 0,
         w3: 0,
-        w4: 0
+        w4: 0,
+        w5: 0
       })
     }
   }

@@ -167,7 +167,7 @@ function formatDate(date) {
 }
 
 function shouldShowSmarter (placement) {
-  if (['w1', 'w2', 'w3', 'w4'].indexOf(placement) < 0) return false;
+  if (['w1', 'w2', 'w3', 'w4', 'w5'].indexOf(placement) < 0) return false;
   if (!window.country_name) return false;
   let country = window.country_name.toLowerCase();
   let widgets;
@@ -182,7 +182,8 @@ function shouldShowSmarter (placement) {
       w1: +o.w1,
       w2: +o.w2,
       w3: +o.w3,
-      w4: +o.w4
+      w4: +o.w4,
+      w5: +o.w5
     }
     break;
   }
@@ -722,7 +723,11 @@ class PPWidgetSearch {
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
       this.openIntentUrl(win, dataIntent, function(){
         if (search_type === 'flight' && localized_data.enable_backtabs) {
-          this.openSmarterUrl(window, camref, source_code, search_type, dataSmarterRedirect);
+          if (shouldShowSmarter('w5')) {
+            this.openSmarterUrl(window, camref, source_code, search_type, dataSmarterRedirect);
+          } else {
+            this.openIntentUrl(window, dataRedirect);    
+          }
         }
       });
       return;
@@ -731,7 +736,11 @@ class PPWidgetSearch {
     // OR... Open for SMARTER
     this.openSmarterUrl(win, camref, source_code, search_type, data, function(){
       if (search_type === 'flight' && localized_data.enable_backtabs) {
-        this.openIntentUrl(window, dataRedirect);
+        if (shouldShowSmarter('w5')) {
+          this.openSmarterUrl(window, camref, source_code, search_type, dataSmarterRedirect);
+        } else {
+          this.openIntentUrl(window, dataRedirect);    
+        }
       }
     });
     
