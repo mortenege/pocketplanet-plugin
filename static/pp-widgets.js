@@ -568,7 +568,7 @@ class PPWidgetSearch {
     return data;
   }
 
-  openIntentUrl (win, data) {
+  openIntentUrl (win, data, callback) {
     let queryString = jQuery.param(data);
     let url;
     if (window.IntentIsBlocked === false || window.IntentIsBlocked === null) {
@@ -577,10 +577,16 @@ class PPWidgetSearch {
       url = "https://compare.pocketplanet.com/api/sca/v1/exit_units?alt_svc=Y&" + queryString;
     }
 
+    var vm = this
     $.get(url, function(response){
       if (response && 'url' in response) {
         let url = response.url + "&nolimit=true&popsOver=true";
         win.location.href = url
+        
+        // Call redirect
+        if (typeof callback === 'function') {
+          callback.apply(vm);
+        }
         if (MODE_DEBUG) {
           console.log('IntentAds XU url', url);
         }
@@ -693,10 +699,11 @@ class PPWidgetSearch {
         dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
       }
 
-      this.openIntentUrl(win, dataIntent);
-      if (search_type === 'flight') {
-        this.openIntentUrl(window, dataRedirect);
-      }
+      this.openIntentUrl(win, dataIntent, function(){
+        if (search_type === 'flight') {
+          this.openIntentUrl(window, dataRedirect);
+        }
+      });
       return;
     }
 
