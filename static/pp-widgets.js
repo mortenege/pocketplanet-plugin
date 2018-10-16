@@ -583,7 +583,7 @@ class PPWidgetSearch {
         let url = response.url + "&nolimit=true&popsOver=true";
         win.location.href = url
         
-        // Call redirect
+        // Callback
         if (typeof callback === 'function') {
           callback.apply(vm);
         }
@@ -700,7 +700,7 @@ class PPWidgetSearch {
       }
 
       this.openIntentUrl(win, dataIntent, function(){
-        if (search_type === 'flight') {
+        if (search_type === 'flight' && localized_data.enable_backtabs) {
           this.openIntentUrl(window, dataRedirect);
         }
       });

@@ -292,7 +292,8 @@ class PPWidgets {
       'widget_countries' => $widgetCountries,
       'is_template_page' => $is_template_page,
       'country' => $country,
-      'city' => $city
+      'city' => $city,
+      'enable_backtabs' => get_option('pp_widgets_enable_backtabs', false)
     );
 
     wp_localize_script('pp_widgets', 'localized_data', $lData);
@@ -378,6 +379,16 @@ class PPWidgets {
   }
 
   /**
+   * Setting HTML: disable smartertravel checkbox
+   */
+  public static function enableBacktabHtmlCallback () {
+    $value = get_option('pp_widgets_enable_backtabs', false);
+    ?>
+    <input type="checkbox" name="pp_widgets_enable_backtabs" value="1" <?php checked($value); ?> />
+    <?php 
+  }
+
+  /**
    * Defines settings and their respective settings sections and fields
    */
   public static function initSettings() {
@@ -432,6 +443,15 @@ class PPWidgets {
       'pp_widgets_disable_smartertravel',
       'Disable Smarter Travel completely',
       [self::class, 'disableSmartertravelHtmlCallback'],
+      'pp_widgets',
+      'pp_widgets_section_1'
+    );
+
+    register_setting( 'pp_widgets', 'pp_widgets_enable_backtabs' );
+    add_settings_field(
+      'pp_widgets_enable_backtabs',
+      'Enable "Backtab"',
+      [self::class, 'enableBacktabHtmlCallback'],
       'pp_widgets',
       'pp_widgets_section_1'
     );
