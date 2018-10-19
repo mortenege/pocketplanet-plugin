@@ -675,6 +675,11 @@ class PPWidgetSearch {
       dataSmarterRedirect['rooms'] = 1;
     } else if (search_type === 'hotel') {
       data['rooms'] = data['rooms'] || 1;
+
+      dataSmarterRedirect['oneway'] = 'true';
+      dataSmarterRedirect['nonstop'] = 'true';
+      dataSmarterRedirect['class'] = 'economy_coach';
+      dataSmarterRedirect['origin'] = window.userLocation.iata || 'LAX';
     }
 
     /*
@@ -715,6 +720,8 @@ class PPWidgetSearch {
       dataRedirect = Object.assign(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
     } else if (search_type === 'hotel') {
       dataIntent = Object.assign(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
+      let iata = window.userLocation.iata;
+      dataRedirect = Object.assign(dataRedirect, this.genIntentFlight('roundtrip', iata, destination_code))
     } else if (search_type === 'car') {
       dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
     }
@@ -722,9 +729,10 @@ class PPWidgetSearch {
     // Open for INTENT
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
       this.openIntentUrl(win, dataIntent, function(){
-        if (search_type === 'flight' && localized_data.enable_backtabs) {
+        if (['flight', 'hotel'].indexOf(search_type) >= 0 && localized_data.enable_backtabs) {
           if (shouldShowSmarter('w5')) {
-            this.openSmarterUrl(window, camref, source_code, 'hotel', dataSmarterRedirect);
+            let opposite = search_type === 'flight' ? 'hotel' : 'flight';
+            this.openSmarterUrl(window, camref, source_code, opposite, dataSmarterRedirect);
           } else {
             this.openIntentUrl(window, dataRedirect);    
           }
@@ -735,10 +743,15 @@ class PPWidgetSearch {
 
     // OR... Open for SMARTER
     this.openSmarterUrl(win, camref, source_code, search_type, data, function(){
-      if (search_type === 'flight' && localized_data.enable_backtabs) {
+      console.log('1', search_type)
+      if (['flight', 'hotel'].indexOf(search_type) >= 0 && localized_data.enable_backtabs) {
+        console.log('2')
         if (shouldShowSmarter('w5')) {
-          this.openSmarterUrl(window, camref, source_code, 'hotel', dataSmarterRedirect);
+          console.log('3')
+          let opposite = search_type === 'flight' ? 'hotel' : 'flight';
+          this.openSmarterUrl(window, camref, source_code, opposite, dataSmarterRedirect);
         } else {
+          console.log('4')
           this.openIntentUrl(window, dataRedirect);    
         }
       }

@@ -3,7 +3,7 @@
 Plugin Name:  pocketplanet widgets
 Plugin URI:   https://github.com/mortenege/pocketplanet-plugin
 Description:  Custom Created widgets for pocketplanet.com
-Version:      20181016
+Version:      20181019
 Author:       Morten Ege Jensen <ege.morten@gmail.com>
 Author URI:   https://github.com/mortenege
 License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class PPWidgets {
-  public const VERSION = '201810161';
+  public const VERSION = '20181019';
 
   public const COOKIE_NAME = 'pp_widgets';
   public const COOKIE_GUID_NAME = 'pp_widgets_guid';
