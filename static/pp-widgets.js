@@ -25,6 +25,17 @@ function setOneway(oneway) {
   }
 }
 
+function mergeObjects (o1, o2) {
+  let objs = [o1, o2];
+  let result =  objs.reduce(function (r, o) {
+      Object.keys(o).forEach(function (k) {
+          r[k] = o[k];
+      });
+      return r;
+  }, {});
+  return result;
+}
+
 /**
  * Build an API url from all segments
  * @param  {[type]} camref      [description]
@@ -592,10 +603,21 @@ class PPWidgetSearch {
           console.log('IntentAds XU url', url);
         }
       } else {
-        console.err(response)
+        console.error(url, response)
         win.close();
       }
     });
+  }
+
+  openPassthroughUrl (win, provider, data) {
+    let d = {
+      provider: provider,
+      ad_block: window.IntentIsBlocked
+    }
+
+    d = mergeObjects(d, data);
+    let queryString = jQuery.param(d);
+    win.location.href = localized_data.home_url + '/passthrough?provider=' + provider + '&' + queryString
   }
 
   openSmarterUrl (win, camref, source_code, search_type, data, callback) {
@@ -666,7 +688,7 @@ class PPWidgetSearch {
     }
 
     // Copy for redirect page
-    let dataSmarterRedirect = Object.assign({}, data);
+    let dataSmarterRedirect = mergeObjects({}, data);
     
     if (search_type === 'flight') {
       data['origin'] = $origin.attr('data-code') || $origin.val();
@@ -716,23 +738,39 @@ class PPWidgetSearch {
     // Generate the base for intent
     let dataIntent = this.genIntentBase(data['travellers'], data['date1'], data['date2']);
     dataIntent['site_reporting_value_01'] = utm_source;
-    let dataRedirect = Object.assign({}, dataIntent);
+    let dataRedirect = mergeObjects({}, dataIntent);
 
     if (search_type === 'flight') {
-      dataIntent = Object.assign(dataIntent, this.genIntentFlight(data['oneway'], origin_code, destination_code))
-      dataRedirect = Object.assign(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
+      dataIntent = mergeObjects(dataIntent, this.genIntentFlight(data['oneway'], origin_code, destination_code))
+      dataRedirect = mergeObjects(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
       dataRedirect['page_id'] = 'flight.home.hotxs';
       dataRedirect['ad_unit_id'] = 'ppl_sca_flt_hot_xs_hom_xu_api';
     } else if (search_type === 'hotel') {
-      dataIntent = Object.assign(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
+      dataIntent = mergeObjects(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
       let iata = window.userLocation.iata;
-      dataRedirect = Object.assign(dataRedirect, this.genIntentFlight('roundtrip', iata, destination_code))
+      dataRedirect = mergeObjects(dataRedirect, this.genIntentFlight('roundtrip', iata, destination_code))
     } else if (search_type === 'car') {
-      dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
+      dataIntent = mergeObjects(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
     }
 
     // setup special ad unit id and page id for redirect
     // TODO
+
+    let provider, obj1;
+    if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
+      provider = 'intentmedia';
+      obj1 = dataIntent
+    } else {
+      provider = 'smartertravel';
+      obj1 = mergeObjects({
+        camref: camref,
+        source_code: source_code,
+        search_type: search_type
+      }, data);
+    }
+
+    this.openPassthroughUrl (win, provider, obj1);
+    return;
 
     // Open for INTENT
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
