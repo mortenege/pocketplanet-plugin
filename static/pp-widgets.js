@@ -592,6 +592,7 @@ class PPWidgetSearch {
           console.log('IntentAds XU url', url);
         }
       } else {
+        console.err(response)
         win.close();
       }
     });
@@ -647,8 +648,6 @@ class PPWidgetSearch {
       obj[item.name] = item.value;
       return obj;
       }, {})
-
-    data['utm_source'] = utm_source;
 
     if (search_type !== 'cruise') {
       data['travelers'] = data['travelers'] || 2;
@@ -716,6 +715,7 @@ class PPWidgetSearch {
     
     // Generate the base for intent
     let dataIntent = this.genIntentBase(data['travellers'], data['date1'], data['date2']);
+    dataIntent['site_reporting_value_01'] = utm_source;
     let dataRedirect = Object.assign({}, dataIntent);
 
     if (search_type === 'flight') {
@@ -751,15 +751,11 @@ class PPWidgetSearch {
 
     // OR... Open for SMARTER
     this.openSmarterUrl(win, camref, source_code, search_type, data, function(){
-      console.log('1', search_type)
       if (['flight', 'hotel'].indexOf(search_type) >= 0 && localized_data.enable_backtabs) {
-        console.log('2')
         if (shouldShowSmarter('w5')) {
-          console.log('3')
           let opposite = search_type === 'flight' ? 'hotel' : 'flight';
           this.openSmarterUrl(window, camref, source_code, opposite, dataSmarterRedirect);
         } else {
-          console.log('4')
           this.openIntentUrl(window, dataRedirect);    
         }
       }
