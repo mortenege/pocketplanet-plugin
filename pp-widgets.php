@@ -11,7 +11,7 @@ License:      GPLv2 <https://www.gnu.org/licenses/gpl-2.0.html>
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class PPWidgets {
-  public const VERSION = '20181019';
+  public const VERSION = '201810192';
 
   public const COOKIE_NAME = 'pp_widgets';
   public const COOKIE_GUID_NAME = 'pp_widgets_guid';
@@ -279,6 +279,7 @@ class PPWidgets {
     $is_template_page = get_page_template_slug() == 'templates/page-pocketplanet.php';
     $city = get_post_meta(get_the_ID(), 'pp_widgets_post_city', true);
     $country = get_post_meta(get_the_ID(), 'pp_widgets_post_country', true);
+    $utm_source = isset($_GET['utm_source']) ? $_GET['utm_source'] : '';
     
     $lData = array(
       'url' => site_url(),
@@ -293,7 +294,8 @@ class PPWidgets {
       'is_template_page' => $is_template_page,
       'country' => $country,
       'city' => $city,
-      'enable_backtabs' => get_option('pp_widgets_enable_backtabs', false)
+      'enable_backtabs' => get_option('pp_widgets_enable_backtabs', false),
+      'utm_source' => $utm_source
     );
 
     wp_localize_script('pp_widgets', 'localized_data', $lData);

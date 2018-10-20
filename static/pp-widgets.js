@@ -617,6 +617,7 @@ class PPWidgetSearch {
     let search_type = params.search_type || 'hotel';
     let camref = params.camref;
     let source_code = params.source_code;
+    let utm_source = params.utm_source;
 
     // Validate origin input
     if (search_type === 'flight') {
@@ -646,6 +647,8 @@ class PPWidgetSearch {
       obj[item.name] = item.value;
       return obj;
       }, {})
+
+    data['utm_source'] = utm_source;
 
     if (search_type !== 'cruise') {
       data['travelers'] = data['travelers'] || 2;
@@ -718,6 +721,8 @@ class PPWidgetSearch {
     if (search_type === 'flight') {
       dataIntent = Object.assign(dataIntent, this.genIntentFlight(data['oneway'], origin_code, destination_code))
       dataRedirect = Object.assign(dataRedirect, this.genIntentHotel(1, destination_city, destination_country, state_code));
+      dataRedirect['page_id'] = 'flight.home.hotxs';
+      dataRedirect['ad_unit_id'] = 'ppl_sca_flt_hot_xs_hom_xu_api';
     } else if (search_type === 'hotel') {
       dataIntent = Object.assign(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
       let iata = window.userLocation.iata;
@@ -725,6 +730,9 @@ class PPWidgetSearch {
     } else if (search_type === 'car') {
       dataIntent = Object.assign(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
     }
+
+    // setup special ad unit id and page id for redirect
+    // TODO
 
     // Open for INTENT
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
@@ -843,7 +851,8 @@ class PPWidgetSearch {
     searchWidget.submit(this, $(this).serializeArray(), {
       search_type: $(this).attr('data-search-type'),
       camref: localized_data.camref,
-      source_code: localized_data.source_code
+      source_code: localized_data.source_code,
+      utm_source: localized_data.utm_source
     });
 
   });
