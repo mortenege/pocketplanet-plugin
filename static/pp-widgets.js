@@ -589,6 +589,7 @@ class PPWidgetSearch {
       url = "https://compare.pocketplanet.com/api/sca/v1/exit_units?alt_svc=Y&" + queryString;
     }
 
+    console.log('..>', url)
     var vm = this
     $.get(url, function(response){
       if (response && 'url' in response) {
@@ -609,7 +610,7 @@ class PPWidgetSearch {
     });
   }
 
-  openPassthroughUrl (win, provider, data) {
+  openPassthroughUrl (win, provider, data, callback) {
     let d = {
       provider: provider,
       ad_block: window.IntentIsBlocked
@@ -617,7 +618,16 @@ class PPWidgetSearch {
 
     d = mergeObjects(d, data);
     let queryString = jQuery.param(d);
-    win.location.href = localized_data.home_url + '/passthrough?provider=' + provider + '&' + queryString
+    let url = localized_data.home_url + '/passthrough?provider=' + provider + '&' + queryString
+    win.location.href = url
+
+    // Callback
+    if (typeof callback === 'function') {
+      callback.apply(this);
+    }
+    if (MODE_DEBUG) {
+      console.log('SmarterAds XU url', url);
+    }
   }
 
   openSmarterUrl (win, camref, source_code, search_type, data, callback) {
@@ -700,7 +710,7 @@ class PPWidgetSearch {
     } else if (search_type === 'hotel') {
       data['rooms'] = data['rooms'] || 1;
 
-      dataSmarterRedirect['oneway'] = 'true';
+      dataSmarterRedirect['oneway'] = 'false';
       dataSmarterRedirect['nonstop'] = 'true';
       dataSmarterRedirect['class'] = 'economy_coach';
       dataSmarterRedirect['origin'] = window.userLocation.iata || 'LAX';
@@ -749,6 +759,8 @@ class PPWidgetSearch {
       dataIntent = mergeObjects(dataIntent, this.genIntentHotel(data['rooms'], destination_city, destination_country, state_code))
       let iata = window.userLocation.iata;
       dataRedirect = mergeObjects(dataRedirect, this.genIntentFlight('roundtrip', iata, destination_code))
+      dataRedirect['page_id'] = 'hotel.home.fltxs';
+      dataRedirect['ad_unit_id'] = 'ppl_sca_hot_flt_xs_hom_xu_api';
     } else if (search_type === 'car') {
       dataIntent = mergeObjects(dataIntent, this.genIntentCar(destination_city, destination_country, state_code))
     }
@@ -756,6 +768,7 @@ class PPWidgetSearch {
     // setup special ad unit id and page id for redirect
     // TODO
 
+    
     let provider, obj1;
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
       provider = 'intentmedia';
@@ -768,10 +781,19 @@ class PPWidgetSearch {
         search_type: search_type
       }, data);
     }
-
-    this.openPassthroughUrl (win, provider, obj1);
+    
+    this.openPassthroughUrl (win, provider, obj1, function(){
+      if (['flight', 'hotel'].indexOf(search_type) >= 0 && localized_data.enable_backtabs) {
+        if (shouldShowSmarter('w5')) {
+          let opposite = search_type === 'flight' ? 'hotel' : 'flight';
+          this.openSmarterUrl(window, camref, source_code, opposite, dataSmarterRedirect);
+        } else {
+          this.openIntentUrl(window, dataRedirect);    
+        }
+      }
+    });
     return;
-
+    /*
     // Open for INTENT
     if ((localized_data.force_intent || !shouldShowSmarter('w1')) && search_type !== 'cruise') {
       this.openIntentUrl(win, dataIntent, function(){
@@ -798,6 +820,7 @@ class PPWidgetSearch {
         }
       }
     });
+    */
     
   }
 }

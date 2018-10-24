@@ -29,7 +29,7 @@ $url = $url . http_build_query($_GET);
 
 $base_url = dirname($_SERVER['PHP_SELF']) . '/static/';
 $img1_url = $base_url . 'pocketplanet-loadingicon-gif.gif';
-$img2_url = $base_url . 'pocketplanet-loadingicon.svg';
+$img2_url = $base_url . 'pp-white.png';
 
 ?>
 
@@ -37,13 +37,13 @@ $img2_url = $base_url . 'pocketplanet-loadingicon.svg';
 <html>
 <head>
   <title>Redirecting</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montseratt" />
   <style type="text/css">
     html, body {
       width: 100%;
       height: 100%;
       margin: 0;
       padding: 0;
-      font-family: arial, sans serif;
     }
 
     .container {
@@ -60,10 +60,23 @@ $img2_url = $base_url . 'pocketplanet-loadingicon.svg';
 
     .centered {
       text-align: center;
+      max-width: 400px;
     }
 
     .text {
-      font-size: 22px;
+      font-size: 35px;
+      font-family: "Montseratt", arial, sans serif;
+      font-weight: normal;
+    }
+
+    .logo {
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin: 0 auto;
+    }
+    .loader {
+      height: 100px;
     }
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -89,7 +102,10 @@ $img2_url = $base_url . 'pocketplanet-loadingicon.svg';
 <body>
 <div class="container">
   <div class="centered">
-    <img src="<?= $img1_url ?>" />
+    <div class="loader">
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-bars"><rect ng-attr-x="{{config.x1}}" y="30" ng-attr-width="{{config.width}}" height="40" fill="#ffffff" x="15" width="10"><animate attributeName="opacity" calcMode="spline" values="1;0.2;1" keyTimes="0;0.5;1" dur="1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" begin="-0.6s" repeatCount="indefinite"></animate></rect><rect ng-attr-x="{{config.x2}}" y="30" ng-attr-width="{{config.width}}" height="40" fill="#ffff" x="35" width="10"><animate attributeName="opacity" calcMode="spline" values="1;0.2;1" keyTimes="0;0.5;1" dur="1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" begin="-0.4s" repeatCount="indefinite"></animate></rect><rect ng-attr-x="{{config.x3}}" y="30" ng-attr-width="{{config.width}}" height="40" fill="#ffffff" x="55" width="10"><animate attributeName="opacity" calcMode="spline" values="1;0.2;1" keyTimes="0;0.5;1" dur="1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" begin="-0.2s" repeatCount="indefinite"></animate></rect><rect ng-attr-x="{{config.x4}}" y="30" ng-attr-width="{{config.width}}" height="40" fill="#ffffff" x="75" width="10"><animate attributeName="opacity" calcMode="spline" values="1;0.2;1" keyTimes="0;0.5;1" dur="1" keySplines="0.5 0 0.5 1;0.5 0 0.5 1" begin="0s" repeatCount="indefinite"></animate></rect></svg>
+    </div>
+    <img src="<?= $img2_url ?>" class="logo"/>
     <h3 class="text">We are finding you the best prices</h3>
   </div>
 </div>
@@ -100,12 +116,16 @@ jQuery(document).ready(function($){
   var provider = '<?= $provider ?>';
 
   if (provider !== 'intentmedia') {
-    window.location.href = url
+    setTimeout(function(){
+      window.location.href = url
+    },2000);
   } else {
     $.get(url, function(response){
       if (response && 'url' in response) {
         let url = response.url + "&nolimit=true&popsOver=true";
-        window.location.href = url
+        setTimeout(function(){
+          window.location.href = url
+        },1500);
       } else {
         console.error(url, response)
       }
